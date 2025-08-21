@@ -29,11 +29,14 @@ def show_cars():
 def add_cars():
     return render_template('add.html')
 
-with app.test_request_context():
-    print(url_for('index'))
-    print(url_for('login'))
-    print(url_for('login', next='/'))
-    print(url_for('show_user_profile', username = 'John Doe'))
+if __name__ ==("__main__"):
+    app.run(debug=True)
+
+# with app.test_request_context():
+#     print(url_for('index'))
+#     print(url_for('login'))
+#     print(url_for('login', next='/'))
+#     print(url_for('show_user_profile', username = 'John Doe'))
 
 
 
