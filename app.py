@@ -5,6 +5,10 @@ from flask import render_template
 from markupsafe import escape   
 app = Flask(__name__)
 
+cars = [{"Make" : "Mazda", "Model" : "Mazda2", "Price" : "2495", "Mileage": "87434"},
+        {"Make" : "Honda", "Model" : "Jazz", "Price" : "3795", "Mileage": "99873"},
+        {"Make" : "Toyota", "Model" : "Corolla", "Price" : "2200", "Mileage": "102224"},
+        {"Make" : "Suzuki", "Model" : "Swift", "Price" : "2250", "Mileage": "113000"}]
 @app.route("/")
 def index():
     return render_template('index.html')
@@ -23,7 +27,7 @@ def health():
 
 @app.route('/cars')
 def show_cars():
-    return render_template('cars.html')
+    return render_template('cars.html', car_list = cars)
 
 @app.route('/add')
 def add_cars():

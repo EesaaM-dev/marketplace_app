@@ -7,13 +7,41 @@
         border: 1px solid black;
     }
 </style>
-    <table>
+
+<table>
         <tr>
-            <th>Cars</th>
+
+            <th>Make</th>
+            <th>Model</th>
+            <th>Price</th>
+            <th>Mileage</th>
+        </tr>
+
+    {% for i in car_list %}
+    <tr>
+        {% for val in i.values() %}
+        <td>{{val}}</td>  
+    
+    {% endfor %}
+    </tr>
+   {% endfor %}
+
+    </table>
+
+
+   
+
+{% endblock %}
+    <!-- <table>
+        <tr>
+
+            <th>Make</th>
+            <th>Model</th>
             <th>Price</th>
             <th>Mileage</th>
         </tr>
         <tr>
+            
             <td>Mazda2</td>
             <td>£2500</td>
             <td>87,654mi</td>
@@ -31,5 +59,4 @@
         </tr>
 
 
-    </table>
-{% endblock %}
+    </table> -->
