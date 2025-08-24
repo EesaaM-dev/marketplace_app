@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import url_for
+from flask import abort, redirect, url_for
 from flask import request
 from flask import render_template
 from markupsafe import escape   
@@ -29,8 +29,13 @@ def health():
 def show_cars():
     return render_template('cars.html', car_list = cars)
 
-@app.route('/add')
+@app.route('/add', methods=['POST','GET'])
 def add_cars():
+    if request.method == "POST":
+        cars.append({"Make" : request.form.get("Make"), "Model" : request.form.get("Model"),
+                      "Price" : request.form.get("Price"), "Mileage" : request.form.get("Mileage") })
+        print(request.form.get("Make"))
+        return redirect(url_for('show_cars'))
     return render_template('add.html')
 
 if __name__ ==("__main__"):
