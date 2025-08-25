@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Add Vehicles{% endblock %}
 {% block content %}
+
+    <style>
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+    </style>
     <h1>ADD YOUR VEHICLE</h1>
     <form method="POST">
         <label for="Make">Vehicle Make:</label><br>
@@ -8,9 +16,9 @@
         <label for="Model">Vehicle Model:</label><br>
         <input type="text" id="Model" name="Model"></br>
         <label for="Price">Vehicle Price:</label><br>
-        <input type="text" id="Price" name=Price></br>
+        <input type="number" id="Price" name=Price></br>
         <label for="Mileage">Vehicle Mileage:</label><br>
-        <input type="text" id="Mileage" name="Mileage"></br>
+        <input type="number" id="Mileage" name="Mileage"></br>
         <input type="submit" value="Submit">
     </form>
 {% endblock %}

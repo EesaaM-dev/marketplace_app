@@ -3,9 +3,19 @@
 {% block title %}Cars{% endblock %}
 {% block content%}
 <style>
-    table, th, td {
-        border: 1px solid black ;padding-right : 25px;
-    }
+
+table {
+    width: 60%;
+    border: solid, 1px, black;
+    margin-left: 10px;
+}
+th,td {
+    height: 50px;
+    border: solid, 1px, black;
+    padding-right: 20px;
+    padding-left: 10px;
+}
+
 </style>
 
 <table>
@@ -17,12 +27,12 @@
             <th>Mileage</th>
         </tr>
 
-    {% for i in car_list %}
+    {% for car in car_list %}
     <tr>
-        {% for val in i.values() %}
-        <td>{{val}}</td>  
-    
-    {% endfor %}
+        <td>{{car.Make}}</td>  
+        <td>{{car.Model}}</td>  
+        <td>{{ "{:,}".format(car.Price)}}</td>  
+        <td>{{ "{:,}".format(car.Mileage)}}</td>  
     </tr>
    {% endfor %}
 
