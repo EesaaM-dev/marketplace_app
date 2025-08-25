@@ -2,6 +2,13 @@
 
 {% block title %}Cars{% endblock %}
 {% block content%}
+{% with messages = get_flashed_messages()%}
+    {% if messages %}
+    {% for message in messages %}
+        <p>{{message}}</p>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 <style>
 
 table {
@@ -31,7 +38,7 @@ th,td {
     <tr>
         <td>{{car.Make}}</td>  
         <td>{{car.Model}}</td>  
-        <td>{{ "{:,}".format(car.Price)}}</td>  
+        <td>{{ "£{:,}".format(car.Price)}}</td>  
         <td>{{ "{:,}".format(car.Mileage)}}</td>  
     </tr>
    {% endfor %}

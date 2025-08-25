@@ -2,23 +2,29 @@
 {% block title %}Add Vehicles{% endblock %}
 {% block content %}
 
-    <style>
+
+
+    <!-- <style>
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
-    </style>
-    <h1>ADD YOUR VEHICLE</h1>
-    <form method="POST">
+    </style> -->
+    {% if error%}
+    <p class=error style="color:red; font-size:20px;"><strong>Error:</strong> {{ error }}
+    {% endif %}
+    <form method="POST" style="margin-left:10px;">
         <label for="Make">Vehicle Make:</label><br>
         <input type="text" id="Make" name="Make"></br>
         <label for="Model">Vehicle Model:</label><br>
         <input type="text" id="Model" name="Model"></br>
         <label for="Price">Vehicle Price:</label><br>
-        <input type="number" id="Price" name=Price></br>
+        <!-- <input type="number" name=Price id="Price" required min="1" step="1"></br> -->
+        <input type="text" name=Price id="Price"></br>
         <label for="Mileage">Vehicle Mileage:</label><br>
-        <input type="number" id="Mileage" name="Mileage"></br>
+        <!-- <input type="number" name="Mileage" id="Mileage" required min="1" step="1"></br> -->
+        <input type="text" name="Mileage" id="Mileage"></br>
         <input type="submit" value="Submit">
     </form>
 {% endblock %}

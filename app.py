@@ -1,10 +1,9 @@
 from flask import Flask
-from flask import abort, redirect, url_for
-from flask import request
-from flask import render_template
+from flask import Flask, flash, redirect, render_template, \
+     request, url_for
 from markupsafe import escape   
 app = Flask(__name__)
-
+app.secret_key = '@?nGUAl$K6_$V+%S'
 cars = [{"Make" : "Mazda", "Model" : "Mazda2", "Price" : 2495, "Mileage": 87434},
         {"Make" : "Honda", "Model" : "Jazz", "Price" : 3795, "Mileage": 99873},
         {"Make" : "Toyota", "Model" : "Corolla", "Price" : 2200, "Mileage": 102224},
@@ -31,15 +30,48 @@ def show_cars():
 
 @app.route('/add', methods=['POST','GET'])
 def add_cars():
+    error = None
     if request.method == "POST":
-        cars.append({"Make" : request.form.get("Make"), "Model" : request.form.get("Model"),
-                      "Price" : request.form.get("Price").replace(',', ''), "Mileage" : request.form.get("Mileage").replace(',', '')})
-        print(request.form.get("Make"))
-        return redirect(url_for('show_cars'))
+        make = request.form.get("Make")
+        model = request.form.get("Model")
+        price = request.form.get("Price")
+        mileage = request.form.get("Mileage")
+        try:
+            price = int(price)
+        except ValueError:
+            error = "Price must be an integer value"
+            return render_template('add.html', error=error)
+        try:
+            mileage = int(mileage)
+        except ValueError:
+            error = "Mileage must be an integer value"
+            return render_template('add.html', error=error)
+        if make == None or model == None or price == None or mileage ==None:
+            error = 'Values cannot be None'
+            print(error)
+        elif make == "" or make.isspace() == True:
+            error="Make cannot be empty"
+        elif model == "" or model.isspace() == True:
+            error="Model cannot be empty"
+        elif price <=0:
+            error= 'Price must be an integer value greater than 0'
+            print(error)
+        elif mileage <=0:
+            error = 'Mileage must be an integer value greater than 0'
+            print(error)
+        
+        else:
+            cars.append({"Make" : make, 
+                        "Model" : model,
+                        "Price" : price, 
+                        "Mileage" : mileage})
+            flash('Vehicle successfully added')
+            return redirect(url_for("show_cars"))
+        return render_template('add.html', error=error)
     return render_template('add.html')
 
 if __name__ ==("__main__"):
-    app.run(debug=True)
+    app.run()
 
 # with app.test_request_context():
 #     print(url_for('index'))
