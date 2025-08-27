@@ -9,8 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 
 app = Flask(__name__)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cars_db.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///car_database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -34,17 +33,18 @@ cars = [{"Make" : "Mazda", "Model" : "Mazda2", "Price" : 2495, "Mileage": 87434}
 
 
 
+
 def populate_db():
-    #method which populates the database with the fake entries from 'cars'
-    for car in cars:
-        car_entry = CarListing(make=car["Make"], model=car["Model"], price=car["Price"], mileage=car["Mileage"])
-        with app.app_context():
-            db.session.add(car_entry)
-            db.session.commit()
-
-populate_db()
-
-
+        #check if database already has data if empty populate it
+        if CarListing.query.first() !=None:
+            print("Car database already has data")
+        else:
+            for car in cars:
+                car_entry = CarListing(make=car["Make"], model=car["Model"], price=car["Price"], mileage=car["Mileage"])
+                with app.app_context():
+                    db.session.add(car_entry)
+                    db.session.commit()
+                    
 @app.route("/")
 def index():
     return render_template('index.html')
@@ -120,7 +120,7 @@ if __name__ ==("__main__"):
     #this also prevents my fake data from being duplicated in the database
     with app.app_context():
         db.create_all() #create the database and tables
-        print("database Created")
+        populate_db()
     print("app running now ")
     app.run()    
 
