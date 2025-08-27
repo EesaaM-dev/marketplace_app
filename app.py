@@ -38,10 +38,11 @@ def populate_db():
     #method which populates the database with the fake entries from 'cars'
     for car in cars:
         car_entry = CarListing(make=car["Make"], model=car["Model"], price=car["Price"], mileage=car["Mileage"])
-        db.session.add(car_entry)
-        db.session.commit()
+        with app.app_context():
+            db.session.add(car_entry)
+            db.session.commit()
 
-
+populate_db()
 
 
 @app.route("/")
