@@ -35,14 +35,9 @@ cars = [{"Make" : "Mazda", "Model" : "Mazda2", "Price" : 2495, "Mileage": 87434}
 
 
 def populate_db():
-
+    #method which populates the database with the fake entries from 'cars'
     for car in cars:
-        make_data = car["Make"]
-        model_data = car["Model"]
-        price_data = car["Price"]
-        mileage_data = car["Mileage"]
-        print(make_data,model_data,price_data,mileage_data)
-        car_entry = CarListing(make=make_data, model=model_data, price=price_data, mileage=mileage_data)
+        car_entry = CarListing(make=car["Make"], model=car["Model"], price=car["Price"], mileage=car["Mileage"])
         with app.app_context():
 
             db.session.add(car_entry)
@@ -122,9 +117,11 @@ def add_cars():
         return render_template('add.html', error=error)
     return render_template('add.html') #when user clicks on the route ('GET') render the add page
 if __name__ ==("__main__"):
+    #database is only created if a database doesn't already exist
+    #this also prevents my fake data from being duplicated in the database
     with app.app_context():
         db.create_all() #create the database and tables
-        populate_db()
+        populate_db() #populate the database with fake listings 
     print("TESTING")
     app.run()    
 
