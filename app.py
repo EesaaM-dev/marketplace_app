@@ -39,7 +39,6 @@ def populate_db():
     for car in cars:
         car_entry = CarListing(make=car["Make"], model=car["Model"], price=car["Price"], mileage=car["Mileage"])
         with app.app_context():
-
             db.session.add(car_entry)
             db.session.commit()
 
