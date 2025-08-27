@@ -10,7 +10,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cars.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cars_db.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -20,6 +20,9 @@ class CarListing(db.Model):
     model = db.Column(db.String(30), nullable = False)
     price = db.Column(db.Integer, nullable = False)
     mileage = db.Column(db.Integer, nullable = False)
+
+    def __repr__(self):
+        return f"ID : {self.id} Make: {self.make}"
 #need secret key for when flashing messages
 app.secret_key = '@?nGUAl$K6_$V+%S' 
 
@@ -30,6 +33,20 @@ cars = [{"Make" : "Mazda", "Model" : "Mazda2", "Price" : 2495, "Mileage": 87434}
         {"Make" : "Suzuki", "Model" : "Swift", "Price" : 2250, "Mileage": 113000}]
 
 
+
+def populate_db():
+
+    for car in cars:
+        make_data = car["Make"]
+        model_data = car["Model"]
+        price_data = car["Price"]
+        mileage_data = car["Mileage"]
+        print(make_data,model_data,price_data,mileage_data)
+        car_entry = CarListing(make=make_data, model=model_data, price=price_data, mileage=mileage_data)
+        with app.app_context():
+
+            db.session.add(car_entry)
+            db.session.commit()
 
 
 
@@ -107,7 +124,9 @@ def add_cars():
 if __name__ ==("__main__"):
     with app.app_context():
         db.create_all() #create the database and tables
-    app.run()
+        populate_db()
+    print("TESTING")
+    app.run()    
 
 # with app.test_request_context():
 #     print(url_for('index'))
