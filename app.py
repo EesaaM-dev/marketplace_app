@@ -44,7 +44,7 @@ def populate_db():
                 with app.app_context():
                     db.session.add(car_entry)
                     db.session.commit()
-                    
+
 @app.route("/")
 def index():
     return render_template('index.html')
@@ -63,7 +63,8 @@ def health():
 
 @app.route('/cars')
 def show_cars():
-    return render_template('cars.html', car_list = cars)
+    cars_db = CarListing.query.all()
+    return render_template('cars.html', car_list = cars_db)
 
 @app.route('/add', methods=['POST','GET'])
 def add_cars():
@@ -106,10 +107,15 @@ def add_cars():
             print(error)
         else:
             #if input validation is successful append to the cars list
-            cars.append({"Make" : make, 
-                        "Model" : model,
-                        "Price" : price, 
-                        "Mileage" : mileage})
+            # cars.append({"Make" : make, 
+            #             "Model" : model,
+            #             "Price" : price, 
+            #             "Mileage" : mileage})
+            
+            car_db_entry = CarListing(make=make, model=model, price=price, mileage=mileage)
+            with app.app_context():
+                    db.session.add(car_db_entry)
+                    db.session.commit()
             flash('Vehicle successfully added') #flashing a message for when the user is redirected
             return redirect(url_for("show_cars"))
         #if input validation fails re-render the add.html page along with the error
@@ -129,6 +135,3 @@ if __name__ ==("__main__"):
 #     print(url_for('login'))
 #     print(url_for('login', next='/'))
 #     print(url_for('show_user_profile', username = 'John Doe'))
-
-
-

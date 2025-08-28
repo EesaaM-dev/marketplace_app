@@ -28,7 +28,7 @@ th,td {
 
 <table>
         <tr>
-
+            <th>ID</th>
             <th>Make</th>
             <th>Model</th>
             <th>Price</th>
@@ -38,10 +38,11 @@ th,td {
     <!-- for loop which iterates through the car_list and populates the table each row corrresponds to a car from the car_list -->
     {% for car in car_list %}
     <tr>
-        <td>{{car.Make}}</td>  
-        <td>{{car.Model}}</td>  
-        <td>{{ "£{:,}".format(car.Price)}}</td>  
-        <td>{{ "{:,}".format(car.Mileage)}}</td>  
+        <td>{{car.id}}</td>  
+        <td>{{car.make}}</td>  
+        <td>{{car.model}}</td>  
+        <td>{{ "£{:,}".format(car.price)}}</td>  
+        <td>{{ "{:,}".format(car.mileage)}}</td>  
     </tr>
    {% endfor %}
 
