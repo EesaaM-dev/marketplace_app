@@ -61,6 +61,13 @@ def login():
 def health():
     return 'OK'
 
+@app.route('/edit', methods=['POST','GET'])
+def edit_cars():
+    return render_template('edit.html')
+@app.route('/delete', methods=['POST','GET'])
+def delete_cars():
+    return render_template('deletion.html')
+
 @app.route('/cars')
 def show_cars():
     cars_db = CarListing.query.all()
