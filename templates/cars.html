@@ -12,20 +12,15 @@
 {% endwith %}
 <style>
 
-table {
-    width: 60%;
-    border: solid, 1px, black;
-    margin-left: 10px;
-}
-th,td {
+table, th,td {
     height: 50px;
     border: solid, 1px, black;
     padding-right: 20px;
     padding-left: 10px;
+    margin-left: 20px;
 }
 
 </style>
-
 <table>
         <tr>
             <th>ID</th>
@@ -33,6 +28,8 @@ th,td {
             <th>Model</th>
             <th>Price</th>
             <th>Mileage</th>
+            <th>Actions</th>
+
         </tr>
 
     <!-- for loop which iterates through the car_list and populates the table each row corrresponds to a car from the car_list -->
@@ -42,7 +39,10 @@ th,td {
         <td>{{car.make}}</td>  
         <td>{{car.model}}</td>  
         <td>{{ "£{:,}".format(car.price)}}</td>  
-        <td>{{ "{:,}".format(car.mileage)}}</td>  
+        <td>{{ "{:,}".format(car.mileage)}}</td> 
+        <td>
+            <form method="POST" action="{{ url_for('delete_car', car_id=car.id)}}"><button type="submit" class="btn btn-danger">Delete</button></form>
+        </td> 
     </tr>
    {% endfor %}
 

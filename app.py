@@ -21,7 +21,7 @@ class CarListing(db.Model):
     mileage = db.Column(db.Integer, nullable = False)
 
     def __repr__(self):
-        return f"ID : {self.id} Make: {self.make}"
+        return f"ID : {self.id} Make: {self.make} Model: {self.model} Price: {self.price}  Mileage: {self.mileage}"
 #need secret key for when flashing messages
 app.secret_key = '@?nGUAl$K6_$V+%S' 
 
@@ -61,12 +61,20 @@ def login():
 def health():
     return 'OK'
 
-@app.route('/edit', methods=['POST','GET'])
+@app.route('/edit', methods=['PUT','GET'])
 def edit_cars():
     return render_template('edit.html')
-@app.route('/delete', methods=['POST','GET'])
-def delete_cars():
-    return render_template('deletion.html')
+#route for deleting cars using variable route
+@app.route('/delete/<car_id>', methods=['POST','GET'])
+def delete_car(car_id):
+
+    #implement logic for deleting from the database where car.id is car_id
+    car_entry = CarListing.query.get(car_id)
+    #db.session.delete(car_entry)
+    #db.session.commit()
+    print(car_entry)
+    flash(f'Vehicle with ID: {car_id} successfully Deleted') #flashing a message for when the user is redirected
+    return redirect(url_for("show_cars"))
 
 @app.route('/cars')
 def show_cars():
@@ -135,7 +143,7 @@ if __name__ ==("__main__"):
         db.create_all() #create the database and tables
         populate_db()
     print("app running now ")
-    app.run()    
+    app.run(debug=True)    
 
 # with app.test_request_context():
 #     print(url_for('index'))
