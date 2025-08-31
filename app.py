@@ -32,6 +32,46 @@ cars = [{"Make" : "Mazda", "Model" : "Mazda2", "Price" : 2495, "Mileage": 87434}
         {"Make" : "Suzuki", "Model" : "Swift", "Price" : 2250, "Mileage": 113000}]
 
 
+def valid_car(make, model, price, mileage):
+    #method to check if a car entry is valid (input validation)
+    error_msg=None
+    is_valid = False
+    try:
+        #try converting price to int if it's a non-integer string it will fail
+        price = int(price)
+    except ValueError:
+        error_msg = "Price must be an integer value"
+        #render the add page again with the error
+        return error_msg, is_valid
+    try:
+        #try converting mileage to int, if it's a non-integer string it fails
+        mileage = int(mileage)
+    except ValueError:
+        error_msg = "Mileage must be an integer value"
+        #render add page with the error
+        return error_msg, is_valid
+    #checking that none of the values are 'None'
+    if make == None or model == None or price == None or mileage ==None:
+        error_msg = 'Values cannot be None'
+        return error_msg, is_valid
+    elif make == "" or make.isspace() == True:
+        error_msg="Make cannot be empty"
+        return error_msg, is_valid
+    elif model == "" or model.isspace() == True:
+        error_msg="Model cannot be empty"
+        #checking that price is a positive integer
+        return error_msg, is_valid
+    elif price <=0:
+        error_msg= 'Price must be an integer value greater than 0'
+        return error_msg, is_valid
+    elif mileage <=0:
+        error_msg = 'Mileage must be an integer value greater than 0'
+        print(error_msg)
+        return error_msg, is_valid
+    else:
+        is_valid = True
+        return error_msg, is_valid
+
 
 
 def populate_db():
@@ -61,17 +101,36 @@ def login():
 def health():
     return 'OK'
 
-@app.route('/edit', methods=['PUT','GET'])
-def edit_cars():
-    return render_template('edit.html')
+@app.route('/edit/<int:car_id>', methods=['POST','GET'])
+def edit_car(car_id):
+    #method to allow editing a car entry
+    old_car_entry = CarListing.query.get(car_id)
+    if request.method =="POST":
+        #if a form is submit get data from the form
+        new_make = request.form.get("Make")
+        new_model = request.form.get("Model")
+        new_price = request.form.get("Price")
+        new_mileage = request.form.get("Mileage")
+        print(new_make, new_model, new_price, new_mileage)
+        error_msg, is_valid = valid_car(new_make, new_model, new_price, new_mileage)
+        if is_valid:
+            old_car_entry.make = new_make
+            old_car_entry.model = new_model
+            old_car_entry.price = new_price
+            old_car_entry.mileage = new_mileage
+            db.session.commit()
+        else:
+            return render_template('edit.html', error=error_msg, id=car_id, car=old_car_entry)
+
+    return render_template('edit.html', id = car_id, car=old_car_entry)
 #route for deleting cars using variable route
-@app.route('/delete/<car_id>', methods=['POST','GET'])
+@app.route('/delete/<int:car_id>', methods=['POST','GET'])
 def delete_car(car_id):
 
     #implement logic for deleting from the database where car.id is car_id
     car_entry = CarListing.query.get(car_id)
-    #db.session.delete(car_entry)
-    #db.session.commit()
+    db.session.delete(car_entry)
+    db.session.commit()
     print(car_entry)
     flash(f'Vehicle with ID: {car_id} successfully Deleted') #flashing a message for when the user is redirected
     return redirect(url_for("show_cars"))
@@ -83,59 +142,25 @@ def show_cars():
 
 @app.route('/add', methods=['POST','GET'])
 def add_cars():
-    error = None
     if request.method == "POST":
         #if user has submitted a form extract data from it
         make = request.form.get("Make")
         model = request.form.get("Model")
         price = request.form.get("Price")
         mileage = request.form.get("Mileage")
-        try:
-            #try converting price to int if it's a non-integer string it will fail
-            price = int(price)
-        except ValueError:
-            error = "Price must be an integer value"
-            #render the add page again with the error
-            return render_template('add.html', error=error) 
-        try:
-            #try converting mileage to int, if it's a non-integer string it fails
-            mileage = int(mileage)
-        except ValueError:
-            error = "Mileage must be an integer value"
-            #render add page with the error
-            return render_template('add.html', error=error)
-        #checking that none of the values are 'None'
-        if make == None or model == None or price == None or mileage ==None:
-            error = 'Values cannot be None'
-            print(error)
-            #check if make is empty or if it is comprised of just whitespace
-        elif make == "" or make.isspace() == True:
-            error="Make cannot be empty"
-        elif model == "" or model.isspace() == True:
-            error="Model cannot be empty"
-            #checking that price is a positive integer
-        elif price <=0:
-            error= 'Price must be an integer value greater than 0'
-            print(error)
-        elif mileage <=0:
-            error = 'Mileage must be an integer value greater than 0'
-            print(error)
-        else:
-            #if input validation is successful append to the cars list
-            # cars.append({"Make" : make, 
-            #             "Model" : model,
-            #             "Price" : price, 
-            #             "Mileage" : mileage})
-            
+
+        error_msg, is_valid = valid_car(make, model, price, mileage)
+        if is_valid:
             car_db_entry = CarListing(make=make, model=model, price=price, mileage=mileage)
             with app.app_context():
                     db.session.add(car_db_entry)
                     db.session.commit()
             flash('Vehicle successfully added') #flashing a message for when the user is redirected
             return redirect(url_for("show_cars"))
-        #if input validation fails re-render the add.html page along with the error
-        return render_template('add.html', error=error)
+        else:
+            return render_template('add.html', error=error_msg)
     return render_template('add.html') #when user clicks on the route ('GET') render the add page
+
 if __name__ ==("__main__"):
     #database is only created if a database doesn't already exist
     #this also prevents my fake data from being duplicated in the database

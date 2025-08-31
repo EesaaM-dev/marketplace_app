@@ -3,5 +3,21 @@
 {% block content%}
 <!-- ask for the ID of the car to edit maybe??  -->
 <h1>Edit Page</h1>
+<p style="margin-left: 20px;">editing car {{car}}</p>
+<!-- display the error to the user when re-rendering the add page after an error  -->
+    {% if error%}
+    <p class=error style="color:red; font-size:20px;"><strong>Error:</strong> {{ error }}
+    {% endif %}
+<form method="POST" style="margin-left:10px;">
+        <label for="Make">Vehicle Make:</label><br>
+        <input type="text" id="Make" name="Make" value="{{car.make}}"></br>
+        <label for="Model">Vehicle Model:</label><br>
+        <input type="text" id="Model" name="Model" value="{{car.model}}"></br>
+        <label for="Price">Vehicle Price:</label><br>
+        <input type="text" name=Price id="Price" value="{{car.price}}"></br>
+        <label for="Mileage">Vehicle Mileage:</label><br>
+        <input type="text" name="Mileage" id="Mileage" value="{{car.mileage}}"></br>
+        <input type="submit" value="Submit">
+    </form>
 {% endblock %}
 
