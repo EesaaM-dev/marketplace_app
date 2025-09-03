@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}LOGIN{% endblock %}
+{% block content%}
+<!-- get all the flashed messages from the session and display the message -->
+{% with messages = get_flashed_messages()%}
+    {% if messages %}
+    {% for message in messages %}
+        <p>{{message}}</p>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+<h1>Login Page</h1>
+    {% if error%}
+    <p class=error style="color:red; font-size:20px;"><strong>Error:</strong> {{ error }}
+    {% endif %}
+<form method="POST" style="margin-left:10px;">
+        <label for="Username">Username:</label><br>
+        <input type="text" id="Username" name="Username"></br>
+        <label for="Password">Password:</label><br>
+        <input type="text" id="Password" name="Password"></br>
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}
+

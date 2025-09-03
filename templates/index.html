@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 {% block title %} HOME PAGE{% endblock %}
 {% block content %}
-<h1>TESTING</h1>
+<!-- get all the flashed messages from the session and display the message -->
+{% with messages = get_flashed_messages()%}
+    {% if messages %}
+    {% for message in messages %}
+        <p>{{message}}</p>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+<h1>Home</h1>
 {% endblock %}
