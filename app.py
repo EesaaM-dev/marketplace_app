@@ -1,4 +1,4 @@
-from flask import Flask
+import flask
 from flask import Flask, flash, redirect, render_template, \
      request, url_for
 from markupsafe import escape   
@@ -29,7 +29,7 @@ class CarListing(db.Model):
     def __repr__(self):
         return f"ID : {self.id} Make: {self.make} Model: {self.model} Price: {self.price}  Mileage: {self.mileage}"
 
-class User(db.Model, flask_login.UserMixin):
+class User(flask_login.UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(30), unique = True)
     hashed_password = db.Column(db.String(30), nullable = False)
@@ -51,7 +51,7 @@ cars = [{"Make" : "Mazda", "Model" : "Mazda2", "Price" : 2495, "Mileage": 87434}
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.get(user_id)
+    return User.query.get(user_id)
 
 def valid_car(make, model, price, mileage):
     #method to check if a car entry is valid (input validation)
@@ -115,17 +115,27 @@ def index():
 def login():
     if request.method == "POST":
 
-        
-        user = User.query.filter_by(username = request.form.get('Username')).one_or_none()
-        if user is None or user.check_password(request.form.get('Password')) == False:
+        user = User.query.filter_by(username = request.form.get('username')).one_or_none()
+        if user is None or user.check_password(request.form.get('password')) == False:
             print("LOGIN FAILED")
             return redirect(url_for("login"))
         else:
             print("LOGIN SUCCESSFUL")
             flash("LOGIN SUCCESSFUL")
-            return redirect(url_for("index"))
+            flask_login.login_user(user)
+            return redirect(url_for("profile"))
     return render_template('login.html')
 
+@app.route('/profile')
+@flask_login.login_required
+def profile():
+    return render_template('profile.html')
+
+@app.route('/logout')
+@flask_login.login_required
+def logout():
+    flask_login.logout_user()
+    return redirect(url_for('login'))
 
 @app.route('/signup', methods=['POST','GET'])
 def signup():
@@ -133,9 +143,9 @@ def signup():
     if request.method == "POST":
         #get the inputs 
         error = None
-        user_inp = request.form.get("Username")
+        user_inp = request.form.get("username")
         user = user.lower() #normalise all usernames to lowercase
-        password_inp = request.form.get("Password")
+        password_inp = request.form.get("password")
         print(len(password_inp))
         #some validation for the inputs
         if user_inp == None or password_inp == None:

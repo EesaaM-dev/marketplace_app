@@ -23,14 +23,34 @@
       <li class="nav-item">
         <a class="nav-link" href="/add">Sell</a>
       </li>
+      
+
+       
+    
+    </ul>
+
+
+    <ul class="navbar-nav ml-auto">
+    {% if current_user.is_authenticated %}
+     <span class="navbar-text">
+      Logged in as {{current_user.username}}
+      </span>
+      <li class="nav-item">
+      <a class="nav-link" href="/logout" style="color: black;">log out</a>
+    </li >
+      {% else %}
       <li class="nav-item">
         <a class="nav-link" href="/login">Login</a>
       </li>
-      <li class="nav-item">
         <a class="nav-link" href="/signup">Sign up</a>
       </li>
-
+      <span class="navbar-text" style="margin-left: 20px;">
+      Signed out
+      </span>
+    {% endif %}
     </ul>
+      
+
   </div>
 </nav>
     <h1>Eesaa's Website</h1>
