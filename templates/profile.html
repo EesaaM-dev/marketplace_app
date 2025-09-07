@@ -7,7 +7,7 @@
     <p class=error style="color:red; font-size:20px;"><strong>Error:</strong> {{ error }}
     {% endif %}
     {% if current_user.is_authenticated %}
-    <p style="font-size: 22px;margin-top: 22px; margin-left: 10px;">Logged in as {{current_user.username}}</p>
+    <p style="font-size: 22px;margin-top: 22px; margin-left: 10px;">Logged in as {{current_user.username.capitalize()}}</p>
     {% endif %}
 {% endblock %}
 

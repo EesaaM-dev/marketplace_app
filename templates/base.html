@@ -33,7 +33,7 @@
     <ul class="navbar-nav ml-auto">
     {% if current_user.is_authenticated %}
      <span class="navbar-text">
-      Logged in as {{current_user.username}}
+      Logged in as {{current_user.username.capitalize()}}
       </span>
       <li class="nav-item">
       <a class="nav-link" href="/logout" style="color: black;">log out</a>

@@ -19,20 +19,29 @@ db = SQLAlchemy(app)
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 
+
+#login_manager.login_view = "login"
 class CarListing(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     make = db.Column(db.String(30), nullable = False)
     model = db.Column(db.String(30), nullable = False)
     price = db.Column(db.Integer, nullable = False)
     mileage = db.Column(db.Integer, nullable = False)
+    #foreign key to link user to listing
+    user_id =  db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
-        return f"ID : {self.id} Make: {self.make} Model: {self.model} Price: {self.price}  Mileage: {self.mileage}"
+        return f"ID : {self.id} Make: {self.make} Model: {self.model} Price: {self.price}  Mileage: {self.mileage} user_id: {self.user_id}"
 
 class User(flask_login.UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(30), unique = True)
     hashed_password = db.Column(db.String(30), nullable = False)
+    #users can have many posts
+    listings = db.relationship('CarListing', backref='owner') 
+
+
+
     def __repr__(self):
         return f"ID : {self.id} Username: {self.username}"
     
@@ -41,6 +50,7 @@ class User(flask_login.UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password )
+
 
 #list of cars which creates each row of the table 
 cars = [{"Make" : "Mazda", "Model" : "Mazda2", "Price" : 2495, "Mileage": 87434},
@@ -101,8 +111,9 @@ def populate_db():
             print("Car database already has data")
         else:
             for car in cars:
-                car_entry = CarListing(make=car["Make"].capitalize(), model=car["Model"], price=car["Price"], mileage=car["Mileage"])
+                car_entry = CarListing(make=car["Make"].capitalize(), model=car["Model"], price=car["Price"], mileage=car["Mileage"], user_id = 0)
                 with app.app_context():
+                    
                     db.session.add(car_entry)
                     db.session.commit()
 
@@ -115,10 +126,12 @@ def index():
 def login():
     if request.method == "POST":
 
-        user = User.query.filter_by(username = request.form.get('username')).one_or_none()
+        user = User.query.filter_by(username = request.form.get('username').lower()).one_or_none()
+        
         if user is None or user.check_password(request.form.get('password')) == False:
             print("LOGIN FAILED")
-            return redirect(url_for("login"))
+            error_msg=("LOGIN FAILED")
+            return render_template("login.html", error = error_msg)
         else:
             print("LOGIN SUCCESSFUL")
             flash("LOGIN SUCCESSFUL")
@@ -143,9 +156,11 @@ def signup():
     if request.method == "POST":
         #get the inputs 
         error = None
-        user_inp = request.form.get("username")
-        user = user.lower() #normalise all usernames to lowercase
-        password_inp = request.form.get("password")
+        user_inp = request.form.get("Username")
+        print(user_inp)
+        user_inp = user_inp.lower() #normalise all usernames to lowercase
+        password_inp = request.form.get("Password")
+        print(password_inp)
         print(len(password_inp))
         #some validation for the inputs
         if user_inp == None or password_inp == None:
@@ -156,6 +171,7 @@ def signup():
             error = "PASSWORD CANNOT BE EMPTY OR CONTAIN WHITESPACE"
         elif len(password_inp) < 8:
             error = "PASSWORD MUST BE AT LEAST 8 CHARACTERS LONG"
+        
         else:
 
         #check if a user already exists for a given username
@@ -188,43 +204,62 @@ def health():
     return 'OK'
 
 @app.route('/edit/<int:car_id>', methods=['POST','GET'])
+@flask_login.login_required
 def edit_car(car_id):
     #method to allow editing a car entry
     old_car_entry = CarListing.query.get(car_id)
-    if request.method =="POST":
-        #if a form is submit get data from the form
-        new_make = request.form.get("Make")
-        new_model = request.form.get("Model")
-        new_price = request.form.get("Price")
-        new_mileage = request.form.get("Mileage")
-        print(new_make, new_model, new_price, new_mileage)
-        error_msg, is_valid = valid_car(new_make, new_model, new_price, new_mileage)
-        if is_valid:
-            #if the car passes validation update the listing
-            old_car_entry.make = new_make.capitalize()
-            old_car_entry.model = new_model
-            old_car_entry.price = new_price
-            old_car_entry.mileage = new_mileage
-            db.session.commit()
-            flash(f'Vehicle with ID: {car_id} was successfully edited') #flashing a message for when the user is redirected
-            return redirect(url_for("show_cars"))
-        else:
-            #if not valid return the page with the error message
-            return render_template('edit.html', error=error_msg, id=car_id, car=old_car_entry)
+    if flask_login.current_user.id == old_car_entry.owner.id:
+        print("CORRECT USER EDITING")
+
+        if request.method =="POST":
+            #if a form is submit get data from the form
+            new_make = request.form.get("Make")
+            new_model = request.form.get("Model")
+            new_price = request.form.get("Price")
+            new_mileage = request.form.get("Mileage")
+            print(new_make, new_model, new_price, new_mileage)
+            error_msg, is_valid = valid_car(new_make, new_model, new_price, new_mileage)
+            if is_valid:
+                #if the car passes validation update the listing
+                old_car_entry.make = new_make.capitalize()
+                old_car_entry.model = new_model
+                old_car_entry.price = new_price
+                old_car_entry.mileage = new_mileage
+                db.session.commit()
+                flash(f'Vehicle with ID: {car_id} was successfully edited') #flashing a message for when the user is redirected
+                return redirect(url_for("show_cars"))
+            else:
+                #if not valid return the page with the error message
+                return render_template('edit.html', error=error_msg, id=car_id, car=old_car_entry)
+    else:
+        flash("UNAUTHORISED YOU CANNOT EDIT THIS LISTING")
+        return redirect(url_for('show_cars'))
+
+   
+   
+
         #rendered on the GET request
     return render_template('edit.html', id = car_id, car=old_car_entry)
 #route for deleting cars using variable route
 @app.route('/delete/<int:car_id>', methods=['POST','GET'])
+@flask_login.login_required
 def delete_car(car_id):
 
     #implement logic for deleting from the database where car.id is car_id
     car_entry = CarListing.query.get(car_id)
-    db.session.delete(car_entry)
-    db.session.commit()
     print(car_entry)
-    flash(f'Vehicle with ID: {car_id} successfully Deleted') #flashing a message for when the user is redirected
-    return redirect(url_for("show_cars"))
-
+    id = flask_login.current_user.id
+    print(car_entry.owner.id)
+    if id == car_entry.owner.id:
+        db.session.delete(car_entry)
+        db.session.commit()
+        print(car_entry)
+        flash(f'Vehicle with ID: {car_id} successfully Deleted') #flashing a message for when the user is redirected
+        return redirect(url_for("show_cars"))
+    else:
+        flash(f'You cannot remove this post')
+        cars_db = CarListing.query.all()
+        return(render_template('cars.html', car_list = cars_db))
 @app.route('/cars')
 def show_cars():
     cars_db = CarListing.query.all()
@@ -234,6 +269,7 @@ def show_cars():
 def add_cars():
     if request.method == "POST":
         #if user has submitted a form extract data from it
+        owner = flask_login.current_user.id
         make = request.form.get("Make")
         model = request.form.get("Model")
         price = request.form.get("Price")
@@ -241,7 +277,7 @@ def add_cars():
 
         error_msg, is_valid = valid_car(make, model, price, mileage)
         if is_valid:
-            car_db_entry = CarListing(make=make.capitalize(), model=model, price=price, mileage=mileage)
+            car_db_entry = CarListing(make=make.capitalize(), model=model, price=price, mileage=mileage, user_id = owner)
             with app.app_context():
                     db.session.add(car_db_entry)
                     db.session.commit()
@@ -256,7 +292,16 @@ if __name__ ==("__main__"):
     #this also prevents my fake data from being duplicated in the database
     with app.app_context():
         db.create_all() #create the database and tables
-        populate_db()
+        populate_db()    
+        print("test")
+        if User.query.first() !=None:
+            print("Already have system user setup")
+        else:
+            user_entry = User(id=0, username="SYSTEM")
+            user_entry.set_password('n/a')
+            db.session.add(user_entry)
+            db.session.commit()
+            print("SYSTEM DEFAULT SUCCESSFULLY ADDED TO THE SYSTEM")
     print("app running now ")
     app.run(debug=True)    
 
