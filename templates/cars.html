@@ -33,7 +33,7 @@ table, th,td {
             <th>Mileage</th>
 
             <!-- actions tab only shows if user is logged in  -->
-            {% if current_user.is_authenticated %}
+            {% if current_user.is_authenticated and action_tab == True or current_user.is_admin %}
             <th>Actions</th>
             {% endif %}
 
@@ -49,15 +49,19 @@ table, th,td {
         <td>{{ "{:,}".format(car.mileage)}}</td> 
 
         <!-- only display the edit and delete options if the user is logged in and listing belongs to them  -->
-         
-        {% if current_user.is_authenticated %}
+        <!-- ensures that the table is drawn correctly (lines for each listing) -->
+        {% if current_user.is_authenticated and action_tab == True or current_user.is_admin %}
         <td>
+    <!-- if the current user is logged in and user id is the same as listings user id or the user is admin show the edit and delete actions on the table -->
+            {% if current_user.is_authenticated and current_user.id == car.user_id or current_user.is_admin %}
             <div class="btn-group" role="group" aria-label="edit delete">
                 <form method="GET" action="{{ url_for('edit_car', car_id=car.id)}}"><button type="submit" class="btn btn-secondary" style="background-color: green;">Edit</button></form>
                 <form method="POST" action="{{ url_for('delete_car', car_id=car.id)}}"><button type="submit" class="btn btn-secondary" style="background-color: red;">Delete</button></form>
             </div>
+            {% endif %}
         </td>
         {% endif %}
+       
         
     </tr>
    {% endfor %}

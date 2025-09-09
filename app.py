@@ -1,13 +1,15 @@
 import flask
+import os
 from flask import Flask, flash, redirect, render_template, \
      request, url_for
 from markupsafe import escape   
 from flask_sqlalchemy import SQLAlchemy
 import flask_login
-
 from werkzeug.security import generate_password_hash, check_password_hash
+import dotenv
 
-
+dotenv.load_dotenv()
+SECRET_VAR = os.getenv("SECRET_VAR")
 
 app = Flask(__name__)
 #need secret key for when flashing messages
@@ -37,9 +39,9 @@ class User(flask_login.UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(30), unique = True)
     hashed_password = db.Column(db.String(30), nullable = False)
+    is_admin = db.Column(db.Boolean, default = False)
     #users can have many posts
     listings = db.relationship('CarListing', backref='owner') 
-
 
 
     def __repr__(self):
@@ -48,8 +50,12 @@ class User(flask_login.UserMixin, db.Model):
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
 
+
+    #used to check if the password is correct
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password )
+    def set_admin(self):
+        self.is_admin=True
 
 
 #list of cars which creates each row of the table 
@@ -208,9 +214,8 @@ def health():
 def edit_car(car_id):
     #method to allow editing a car entry
     old_car_entry = CarListing.query.get(car_id)
-    if flask_login.current_user.id == old_car_entry.owner.id:
-        print("CORRECT USER EDITING")
-
+    #check if current user owns the listing or if they're an admin and then allow editing
+    if flask_login.current_user.id == old_car_entry.owner.id or flask_login.current_user.is_admin:
         if request.method =="POST":
             #if a form is submit get data from the form
             new_make = request.form.get("Make")
@@ -248,9 +253,9 @@ def delete_car(car_id):
     #implement logic for deleting from the database where car.id is car_id
     car_entry = CarListing.query.get(car_id)
     print(car_entry)
-    id = flask_login.current_user.id
     print(car_entry.owner.id)
-    if id == car_entry.owner.id:
+    #check if current user owns the listing or if they're an admin
+    if flask_login.current_user.id == car_entry.owner.id or flask_login.current_user.is_admin:
         db.session.delete(car_entry)
         db.session.commit()
         print(car_entry)
@@ -262,8 +267,12 @@ def delete_car(car_id):
         return(render_template('cars.html', car_list = cars_db))
 @app.route('/cars')
 def show_cars():
+    action_tab = False
+    #using first() instead of one_or_none because first doesn't raise an exception when multiple rows exist
+    if flask_login.current_user.is_authenticated and CarListing.query.filter_by(user_id = flask_login.current_user.id).first() != None:
+        action_tab = True
     cars_db = CarListing.query.all()
-    return render_template('cars.html', car_list = cars_db)
+    return render_template('cars.html', car_list = cars_db, action_tab = action_tab)
 
 @app.route('/add', methods=['POST','GET'])
 def add_cars():
@@ -294,14 +303,21 @@ if __name__ ==("__main__"):
         db.create_all() #create the database and tables
         populate_db()    
         print("test")
+        #if users exist in the database we dont need to set up the admin and SYSTEM account
         if User.query.first() !=None:
-            print("Already have system user setup")
+            print("Already have users setup")
         else:
+            #setup the SYSTEM and admin account
             user_entry = User(id=0, username="SYSTEM")
             user_entry.set_password('n/a')
+            admin_entry = User(username='admin', is_admin = True)
+            admin_entry.set_password(SECRET_VAR)
             db.session.add(user_entry)
+            print("SYSTEM ADDED")
+            db.session.add(admin_entry)
+            print("ADMIN ADDED")
             db.session.commit()
-            print("SYSTEM DEFAULT SUCCESSFULLY ADDED TO THE SYSTEM")
+            print("SYSTEM AND ADMIN ACCOUNTS SETUP")
     print("app running now ")
     app.run(debug=True)    
 
