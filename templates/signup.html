@@ -4,7 +4,8 @@
 
 <h1>Signup Page</h1>
     {% if error %}
-    <p class=error style="color:red; font-size:20px;"><strong>Error:</strong> {{ error }}
+    <div class="alert alert-danger" role="alert" ><strong>Error:</strong> {{ error }}
+    </div>
     {% endif %}
 <form method="POST" style="margin-left:10px;">
         <label for="Username">Choose your username:</label><br>

@@ -72,6 +72,7 @@ def valid_car(make, model, price, mileage):
     #method to check if a car entry is valid (input validation)
     error_msg=None
     is_valid = False
+    
     try:
         #try converting price to int if it's a non-integer string it will fail
         price = int(price)
@@ -87,11 +88,11 @@ def valid_car(make, model, price, mileage):
         #render add page with the error
         return error_msg, is_valid
     #checking that none of the values are 'None'
-    if make == None or model == None or price == None or mileage ==None:
-        error_msg = 'Values cannot be None'
+    if not make or not model or not price or not mileage:
+        error_msg = "You cannot submit an empty form, please complete every field"
         return error_msg, is_valid
     elif make == "" or make.isspace() == True:
-        error_msg="Make cannot be empty"
+        error_msg="Make cannot be empty or contain whitespace"
         return error_msg, is_valid
     elif model == "" or model.isspace() == True:
         error_msg="Model cannot be empty"
@@ -124,7 +125,7 @@ def populate_db():
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template('index.html', page_name="home")
 
 
 @app.route('/login', methods=['POST','GET'])
@@ -135,24 +136,27 @@ def login():
         
         if user is None or user.check_password(request.form.get('password')) == False:
             print("LOGIN FAILED")
-            error_msg=("LOGIN FAILED")
+
+            error_msg=("Your login was unsuccessful, please try again")
             return render_template("login.html", error = error_msg)
         else:
             print("LOGIN SUCCESSFUL")
-            flash("LOGIN SUCCESSFUL")
+            
             flask_login.login_user(user)
+            flash(f'Login Successful welcome {flask_login.current_user.username.capitalize()}!', 'success')
             return redirect(url_for("profile"))
-    return render_template('login.html')
+    return render_template('login.html', page_name = "login")
 
 @app.route('/profile')
 @flask_login.login_required
 def profile():
-    return render_template('profile.html')
+    return render_template('profile.html', page_name = "profile")
 
 @app.route('/logout')
 @flask_login.login_required
 def logout():
     flask_login.logout_user()
+    flash('Log out successful', 'success')
     return redirect(url_for('login'))
 
 @app.route('/signup', methods=['POST','GET'])
@@ -189,7 +193,7 @@ def signup():
                 db.session.add(new_user)
                 db.session.commit()
                 #flashing a message to give feedback to the user
-                flash("User successfully added to the system please login")
+                flash('User successfully added to the system please login', 'success')
                 return redirect(url_for("login"))
             else:
                 print("NOT ADDING")
@@ -197,7 +201,7 @@ def signup():
             
         return render_template('signup.html', error=error)
 
-    return render_template('signup.html')
+    return render_template('signup.html', page_name = "signup")
 
 
 @app.route('/user/<username>')
@@ -217,8 +221,8 @@ def edit_car(car_id):
     if flask_login.current_user.id == old_car_entry.owner.id or flask_login.current_user.is_admin:
         if request.method =="POST":
             #if a form is submit get data from the form
-            new_make = request.form.get("Make")
-            new_model = request.form.get("Model")
+            new_make = request.form.get("Make").strip()
+            new_model = request.form.get("Model").strip()
             new_price = request.form.get("Price")
             new_mileage = request.form.get("Mileage")
             print(new_make, new_model, new_price, new_mileage)
@@ -230,20 +234,20 @@ def edit_car(car_id):
                 old_car_entry.price = new_price
                 old_car_entry.mileage = new_mileage
                 db.session.commit()
-                flash(f'Vehicle with ID: {car_id} was successfully edited') #flashing a message for when the user is redirected
+                flash(f'Vehicle with ID: {car_id} was successfully edited', 'success') #flashing a message for when the user is redirected
                 return redirect(url_for("show_cars"))
             else:
                 #if not valid return the page with the error message
                 return render_template('edit.html', error=error_msg, id=car_id, car=old_car_entry)
     else:
-        flash("UNAUTHORISED YOU CANNOT EDIT THIS LISTING")
+        flash('UNAUTHORISED YOU CANNOT EDIT THIS LISTING', 'danger')
         return redirect(url_for('show_cars'))
 
    
    
 
         #rendered on the GET request
-    return render_template('edit.html', id = car_id, car=old_car_entry)
+    return render_template('edit.html', id = car_id, car=old_car_entry, page_name = "edit")
 #route for deleting cars using variable route
 @app.route('/delete/<int:car_id>', methods=['POST','GET'])
 @flask_login.login_required
@@ -258,10 +262,10 @@ def delete_car(car_id):
         db.session.delete(car_entry)
         db.session.commit()
         print(car_entry)
-        flash(f'Vehicle with ID: {car_id} successfully Deleted') #flashing a message for when the user is redirected
+        flash(f'Vehicle with ID: {car_id} successfully Deleted', 'success') #flashing a message for when the user is redirected
         return redirect(url_for("show_cars"))
     else:
-        flash(f'You cannot remove this post')
+        flash(f'You cannot remove this post', 'danger')
         cars_db = CarListing.query.all()
         return(render_template('cars.html', car_list = cars_db))
 @app.route('/cars')
@@ -271,29 +275,35 @@ def show_cars():
     if flask_login.current_user.is_authenticated and CarListing.query.filter_by(user_id = flask_login.current_user.id).first() != None:
         action_tab = True
     cars_db = CarListing.query.all()
-    return render_template('cars.html', car_list = cars_db, action_tab = action_tab)
+    return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars")
 
 @app.route('/add', methods=['POST','GET'])
 def add_cars():
-    if request.method == "POST":
-        #if user has submitted a form extract data from it
-        owner = flask_login.current_user.id
-        make = request.form.get("Make")
-        model = request.form.get("Model")
-        price = request.form.get("Price")
-        mileage = request.form.get("Mileage")
+    if flask_login.current_user.is_authenticated:
+        if request.method == "POST":
+            #if user has submitted a form extract data from it
+            #strip() to clean up user input before adding to the system
+            owner = flask_login.current_user.id
+            make = request.form.get("Make").strip()
+            model = request.form.get("Model").strip()
+            price = request.form.get("Price").strip()
+            mileage = request.form.get("Mileage").strip()
 
-        error_msg, is_valid = valid_car(make, model, price, mileage)
-        if is_valid:
-            car_db_entry = CarListing(make=make.capitalize(), model=model, price=price, mileage=mileage, user_id = owner)
-            with app.app_context():
-                    db.session.add(car_db_entry)
-                    db.session.commit()
-            flash('Vehicle successfully added') #flashing a message for when the user is redirected
-            return redirect(url_for("show_cars"))
-        else:
-            return render_template('add.html', error=error_msg)
-    return render_template('add.html') #when user clicks on the route ('GET') render the add page
+            error_msg, is_valid = valid_car(make, model, price, mileage)
+            if is_valid:
+                #if car is valid it can be added to the database
+                car_db_entry = CarListing(make=make.capitalize(), model=model, price=price, mileage=mileage, user_id = owner)
+                with app.app_context():
+                        db.session.add(car_db_entry)
+                        db.session.commit()
+                flash('Vehicle successfully added', 'success') #flashing a message for when the user is redirected
+                return redirect(url_for("show_cars"))
+            else:
+                return render_template('add.html', error=error_msg)
+    else:
+        flash('You must login or sign up to sell cars', 'danger')
+        return redirect(url_for("login"))
+    return render_template('add.html', page_name = "add") #when user clicks on the route ('GET') render the add page
 
 if __name__ ==("__main__"):
     #database is only created if a database doesn't already exist
