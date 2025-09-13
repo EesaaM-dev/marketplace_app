@@ -138,7 +138,7 @@ def login():
             print("LOGIN FAILED")
 
             error_msg=("Your login was unsuccessful, please try again")
-            return render_template("login.html", error = error_msg)
+            return render_template("login.html", error = error_msg, page_name = "login")
         else:
             print("LOGIN SUCCESSFUL")
             
@@ -199,7 +199,7 @@ def signup():
                 print("NOT ADDING")
                 error = "CANNOT ADD THIS USER TO THE DATABASE, AS ANOTHER USER ALREADY EXISTS WITH THIS USERNAME"
             
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', error=error, page_name="signup")
 
     return render_template('signup.html', page_name = "signup")
 
@@ -212,7 +212,7 @@ def show_user_profile(username):
 def health():
     return 'OK'
 
-@app.route('/edit/<int:car_id>', methods=['POST','GET'])
+@app.route('/cars/edit/<int:car_id>', methods=['POST','GET'])
 @flask_login.login_required
 def edit_car(car_id):
     #method to allow editing a car entry
@@ -247,9 +247,9 @@ def edit_car(car_id):
    
 
         #rendered on the GET request
-    return render_template('edit.html', id = car_id, car=old_car_entry, page_name = "edit")
+    return render_template('edit.html', id = car_id, car=old_car_entry, page_name = "cars")
 #route for deleting cars using variable route
-@app.route('/delete/<int:car_id>', methods=['POST','GET'])
+@app.route('/cars/delete/<int:car_id>', methods=['POST','GET'])
 @flask_login.login_required
 def delete_car(car_id):
 
