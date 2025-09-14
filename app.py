@@ -133,18 +133,22 @@ def login():
     if request.method == "POST":
 
         user = User.query.filter_by(username = request.form.get('username').lower()).one_or_none()
-        
-        if user is None or user.check_password(request.form.get('password')) == False:
-            print("LOGIN FAILED")
-
+        user_inp = request.form.get('username').lower()
+        pass_inp = request.form.get('password')
+        if user_inp == "" or user_inp.isspace() ==True:
+            error_msg = "Username cannot be empty or contain whitespace"
+        elif pass_inp  == "" or pass_inp.isspace() ==True:
+            error_msg = "Password cannot be empty or contain whitespace"
+        elif user is None or user.check_password(request.form.get('password')) == False:
             error_msg=("Your login was unsuccessful, please try again")
-            return render_template("login.html", error = error_msg, page_name = "login")
+
         else:
             print("LOGIN SUCCESSFUL")
             
             flask_login.login_user(user)
-            flash(f'Login Successful welcome {flask_login.current_user.username.capitalize()}!', 'success')
+            flash(f'Login successful welcome: {flask_login.current_user.username.capitalize()}!', 'success')
             return redirect(url_for("profile"))
+        return render_template("login.html", error = error_msg, page_name = "login")
     return render_template('login.html', page_name = "login")
 
 @app.route('/profile')
@@ -165,10 +169,10 @@ def signup():
     if request.method == "POST":
         #get the inputs 
         error = None
-        user_inp = request.form.get("Username")
+        user_inp = request.form.get("username")
         print(user_inp)
         user_inp = user_inp.lower() #normalise all usernames to lowercase
-        password_inp = request.form.get("Password")
+        password_inp = request.form.get("password")
         print(password_inp)
         print(len(password_inp))
         #some validation for the inputs
@@ -197,7 +201,7 @@ def signup():
                 return redirect(url_for("login"))
             else:
                 print("NOT ADDING")
-                error = "CANNOT ADD THIS USER TO THE DATABASE, AS ANOTHER USER ALREADY EXISTS WITH THIS USERNAME"
+                error = "A user with this username already exists, please try another username"
             
         return render_template('signup.html', error=error, page_name="signup")
 
