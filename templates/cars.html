@@ -6,30 +6,41 @@
 
 <style>
 
-table, th,td {
-    height: 50px;
-    border: solid, 1px, black;
-    padding-right: 20px;
-    padding-left: 10px;
-    margin-left: 20px;
-    margin-top: 20px;
-}
-.btn-group button {
-    margin-right: 5px;
+
+.custom-table  {
+    margin-top: 15px;  
+    padding-right:50px;
+    background-color: rgb(214, 214, 214);
+    color: #000000;
 }
 
+.custom-table th, .custom-table td{
+    border:1.5px solid rgb(0, 0, 0);
+}
+
+
+
+.action-row{
+    width:350px;
+}
+.btn-group button,.btn-group button:hover  {
+    margin-right: 5px;
+    border:2px solid rgb(0, 0, 0);
+
+}
 </style>
-<table>
+<div class="table-responsive container-fluid table-container">
+<table class="table table-bordered custom-table">
         <tr>
-            <th>ID</th>
-            <th>Make</th>
-            <th>Model</th>
-            <th>Price</th>
-            <th>Mileage</th>
+            <th scope="col">ID</th>
+            <th scope="col">Make</th>
+            <th scope="col">Model</th>
+            <th scope="col">Price</th>
+            <th scope="col">Mileage</th>
 
             <!-- actions tab only shows if user is logged in  -->
             {% if current_user.is_authenticated and action_tab == True or current_user.is_admin %}
-            <th>Actions</th>
+            <th scope="col">Actions</th>
             {% endif %}
 
         </tr>
@@ -37,7 +48,7 @@ table, th,td {
     <!-- for loop which iterates through the car_list and populates the table each row corrresponds to a car from the car_list -->
     {% for car in car_list %}
     <tr>
-        <td>{{car.id}}</td>  
+        <th scope="row">{{car.id}}</th>
         <td>{{car.make}}</td>  
         <td>{{car.model}}</td>  
         <td>{{ "£{:,}".format(car.price)}}</td>  
@@ -46,7 +57,7 @@ table, th,td {
         <!-- only display the edit and delete options if the user is logged in and listing belongs to them  -->
         <!-- ensures that the table is drawn correctly (lines for each listing) -->
         {% if current_user.is_authenticated and action_tab == True or current_user.is_admin %}
-        <td>
+        <td class="action-row">
     <!-- if the current user is logged in and user id is the same as listings user id or the user is admin show the edit and delete actions on the table -->
             {% if current_user.is_authenticated and current_user.id == car.user_id or current_user.is_admin %}
             <div class="btn-group" role="group" aria-label="edit delete">
@@ -57,12 +68,11 @@ table, th,td {
         </td>
         {% endif %}
        
-        
     </tr>
    {% endfor %}
 
     </table>
-
+</div>
 
    
 
