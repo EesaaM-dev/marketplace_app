@@ -10,12 +10,15 @@
 .custom-table  {
     margin-top: 15px;  
     padding-right:50px;
-    background-color: rgb(214, 214, 214);
-    color: #000000;
+    background-color:#343a40;
+    color: #ffffff;
 }
 
 .custom-table th, .custom-table td{
-    border:1.5px solid rgb(0, 0, 0);
+    border:2px solid rgb(0, 0, 0);
+    padding: 0.8em;
+    padding-top: 17px;
+    height: 65px;
 }
 
 
@@ -23,15 +26,19 @@
 .action-row{
     width:350px;
 }
+
+
 .btn-group button,.btn-group button:hover  {
     margin-right: 5px;
-    border:2px solid rgb(0, 0, 0);
+    border:1px solid rgb(0, 0, 0);
+    font-size: 16px;
 
 }
 </style>
 <div class="table-responsive container-fluid table-container">
-<table class="table table-bordered custom-table">
+<table class="table table-bordered table-hover custom-table ">
         <tr>
+            <thead>
             <th scope="col">ID</th>
             <th scope="col">Make</th>
             <th scope="col">Model</th>
@@ -44,9 +51,11 @@
             {% endif %}
 
         </tr>
+        </thead>
 
     <!-- for loop which iterates through the car_list and populates the table each row corrresponds to a car from the car_list -->
     {% for car in car_list %}
+    <tbody>
     <tr>
         <th scope="row">{{car.id}}</th>
         <td>{{car.make}}</td>  
@@ -60,15 +69,16 @@
         <td class="action-row">
     <!-- if the current user is logged in and user id is the same as listings user id or the user is admin show the edit and delete actions on the table -->
             {% if current_user.is_authenticated and current_user.id == car.user_id or current_user.is_admin %}
-            <div class="btn-group" role="group" aria-label="edit delete">
-                <form method="GET" action="{{ url_for('edit_car', car_id=car.id)}}"><button type="submit" class="btn btn-secondary" style="background-color: green;">Edit</button></form>
-                <form method="POST" action="{{ url_for('delete_car', car_id=car.id)}}"><button type="submit" class="btn btn-secondary" style="background-color: red;">Delete</button></form>
+            <div class="btn-group" role="group">
+                <form method="GET" action="{{ url_for('edit_car', car_id=car.id)}}"><button type="submit" class="btn btn-secondary btn-sm" style="background-color: green;">Edit</button></form>
+                <form method="POST" action="{{ url_for('delete_car', car_id=car.id)}}"><button type="submit" class="btn btn-secondary btn-sm" style="background-color: red;">Delete</button></form>
             </div>
             {% endif %}
         </td>
         {% endif %}
        
     </tr>
+    </tbody>
    {% endfor %}
 
     </table>
