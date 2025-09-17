@@ -17,14 +17,20 @@
 .custom-table th, .custom-table td{
     border:2px solid rgb(0, 0, 0);
     padding: 0.8em;
-    padding-top: 17px;
     height: 65px;
+    vertical-align: middle;
+}
+
+.custom-table thead th {
+    vertical-align: middle;
 }
 
 
 
+
 .action-row{
-    width:350px;
+    width:330px;
+    margin-right: 50px;
 }
 
 
@@ -32,11 +38,10 @@
     margin-right: 5px;
     border:1px solid rgb(0, 0, 0);
     font-size: 16px;
-
 }
 </style>
 <div class="table-responsive container-fluid table-container">
-<table class="table table-bordered table-hover custom-table ">
+<table class="table table-bordered custom-table table-hover">
         <tr>
             <thead>
             <th scope="col">ID</th>
@@ -48,15 +53,15 @@
             <!-- actions tab only shows if user is logged in  -->
             {% if current_user.is_authenticated and action_tab == True or current_user.is_admin %}
             <th scope="col">Actions</th>
+            </thead>
             {% endif %}
-
         </tr>
-        </thead>
+       
 
     <!-- for loop which iterates through the car_list and populates the table each row corrresponds to a car from the car_list -->
     {% for car in car_list %}
-    <tbody>
     <tr>
+        <tbody>
         <th scope="row">{{car.id}}</th>
         <td>{{car.make}}</td>  
         <td>{{car.model}}</td>  
@@ -76,9 +81,8 @@
             {% endif %}
         </td>
         {% endif %}
-       
+       </tbody>
     </tr>
-    </tbody>
    {% endfor %}
 
     </table>
