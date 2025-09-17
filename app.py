@@ -89,7 +89,7 @@ def valid_car(make, model, price, mileage):
         return error_msg, is_valid
     #checking that none of the values are 'None'
     if not make or not model or not price or not mileage:
-        error_msg = "You cannot submit an empty form, please complete every field"
+        error_msg = "You cannot submit a form with empty fields, please try again"
         return error_msg, is_valid
     elif make == "" or make.isspace() == True:
         error_msg="Make cannot be empty or contain whitespace"

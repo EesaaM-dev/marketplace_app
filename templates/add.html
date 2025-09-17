@@ -14,21 +14,31 @@
     </style>
     
     <!-- display the error to the user when re-rendering the add page after an error  -->
-    {% if error%}
-    <div class="alert alert-danger" role="alert"><strong>Error:</strong>
-         {{ error }}
+   {% if error %}
+    <div class="alert alert-danger" role="alert" ><strong>Error:</strong> {{ error }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
     </div>
     {% endif %}
     <!-- form has some client side validation  -->
-    <form method="POST" style="margin-left:10px; margin-top: 20px;">
+    <div class="listings-form">
+        <h2>Selling</h2>
+    <form method="POST">
         <label for="Make">Vehicle Make:</label><br>
-        <input type="text" id="Make" name="Make"></br>
+        <input type="text" class="form-control" id="Make" name="Make"></br>
         <label for="Model">Vehicle Model:</label><br>
-        <input type="text" id="Model" name="Model"></br>
+        <input type="text" class="form-control" id="Model" name="Model"></br>
         <label for="Price">Vehicle Price:</label><br>
-        <input type="text" name=Price id="Price"></br>
+        <input type="text" class="form-control" name=Price id="Price"></br>
         <label for="Mileage">Vehicle Mileage:</label><br>
-        <input type="text" name="Mileage" id="Mileage"></br>
-        <input type="submit" value="Submit">
+        <input type="text" class="form-control" name="Mileage" id="Mileage"></br>
+        <div class="button-row" role="group">
+        <button type="submit" class="btn btn-listing">
+          Submit
+        </button>
+        <a class="btn btn-listing" href="{{url_for('show_cars')}}" role="button" style="background-color: rgba(227, 48, 48, 0.734);">Cancel</a>
+        </div>
     </form>
+    </div>
 {% endblock %}

@@ -24,6 +24,9 @@
 .custom-table thead th {
     vertical-align: middle;
 }
+.custom-table tbody tr:hover{
+    color: #e0db51;
+}
 
 
 
@@ -75,8 +78,8 @@
     <!-- if the current user is logged in and user id is the same as listings user id or the user is admin show the edit and delete actions on the table -->
             {% if current_user.is_authenticated and current_user.id == car.user_id or current_user.is_admin %}
             <div class="btn-group" role="group">
-                <form method="GET" action="{{ url_for('edit_car', car_id=car.id)}}"><button type="submit" class="btn btn-secondary btn-sm" style="background-color: green;">Edit</button></form>
-                <form method="POST" action="{{ url_for('delete_car', car_id=car.id)}}"><button type="submit" class="btn btn-secondary btn-sm" style="background-color: red;">Delete</button></form>
+                <form method="GET" action="{{ url_for('edit_car', car_id=car.id)}}"><button type="submit" class="btn btn-secondary btn-sm" style="background-color: rgba(0, 128, 0, 0.786);">Edit</button></form>
+                <form method="POST" action="{{ url_for('delete_car', car_id=car.id)}}"><button type="submit" class="btn btn-secondary btn-sm" style="background-color:rgba(227, 48, 48, 0.734);">Delete</button></form>
             </div>
             {% endif %}
         </td>
