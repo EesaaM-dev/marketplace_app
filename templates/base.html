@@ -11,7 +11,7 @@
       .navbar-dark .navbar-nav .nav-link.active {
         background-color: rgb(79, 79, 79);
         padding-top:10px;
-        padding-bottom: 10px;
+        padding-bottom: 12px;
       }
       .navbar {
         padding:0%;
@@ -29,6 +29,22 @@
       .navbar-dark .navbar-nav .nav-item:hover .nav-link {
     color: #e0db51;
 }
+.py-1 {
+    padding-bottom: .10rem !important;
+    padding-top: .10rem !important;
+}
+
+.btn-outline-search {
+  color:#e0db51;
+  background-color: transparent;
+  border-color: #e0db51;
+}
+.btn-outline-search:hover {
+  background-color:#e0db51;
+  border-color:#e0db51;
+  color: rgb(79, 79, 79);
+}
+
     </style>
 </head>
 <body  style="background-color: #e9eaea;">
@@ -58,6 +74,10 @@
 
 
     <ul class="navbar-nav ml-auto">
+      <form method="GET" class="form-inline" action="{{ url_for('show_cars')}}" >
+        <input class="form-control mr-sm-2 py-1" type="Search" placeholder="Search" aria-label="Search" name="search_query" id="search_query">
+        <button type="submit" class="btn btn-outline-search mr-sm-2 py-1">Enter</button>
+      </form>
     {% if current_user.is_authenticated %}
      <span class="navbar-text">
       Logged in as {{current_user.username.capitalize()}}

@@ -67,6 +67,16 @@
   color: #e0db51;
 }
 
+.btn-cancel {
+  background-color:rgba(227, 48, 48, 0.734);
+}
+
+.btn-cancel:hover {
+  background-color:rgb(227, 48, 48);
+  color:white;
+}
+
+
 .button-row {
     display:flex;
 

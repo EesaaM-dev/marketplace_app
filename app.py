@@ -272,12 +272,37 @@ def delete_car(car_id):
         flash(f'You cannot remove this post', 'danger')
         cars_db = CarListing.query.all()
         return(render_template('cars.html', car_list = cars_db))
+    
+# @app.route('/search')
+# def search_cars():
+#     print("URL REACHED")
+#     #request.args.get to get, the GET data
+#     q=request.args.get('search_query')
+#     query_search = CarListing.query.filter(CarListing.make.like(q))
+#     print(query_search)
+#     return render_template('cars.html', searched_cars = query_search)
+
 @app.route('/cars')
 def show_cars():
     action_tab = False
     #using first() instead of one_or_none because first doesn't raise an exception when multiple rows exist
     if flask_login.current_user.is_authenticated and CarListing.query.filter_by(user_id = flask_login.current_user.id).first() != None:
         action_tab = True
+    q=request.args.get('search_query')
+    if q:
+        print("SEARCHING FOR SOMETHING")
+        #if search query is submitted 
+        search = "%{}%".format(q)
+        query_search = CarListing.query.filter((CarListing.make.like(search)) | (CarListing.model.like(search) ))
+        print(query_search.first())
+        
+        if query_search.first() != None:
+            flash(f'Search Results for "{q}"', 'info' )
+            cars_db = query_search
+            return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars")
+        else:
+            error =f'No Results found for "{q}"'
+            return render_template('cars.html', page_name = "cars", error = error)
     cars_db = CarListing.query.all()
     return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars")
 
@@ -308,6 +333,8 @@ def add_cars():
         flash('You must login or sign up to sell cars', 'danger')
         return redirect(url_for("login"))
     return render_template('add.html', page_name = "add") #when user clicks on the route ('GET') render the add page
+
+
 
 if __name__ ==("__main__"):
     #database is only created if a database doesn't already exist

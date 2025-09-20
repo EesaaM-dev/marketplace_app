@@ -43,6 +43,11 @@
     font-size: 16px;
 }
 </style>
+{% if error %}
+    <div class="alert alert-danger" role="alert" ><strong>Error:</strong> {{ error }}
+    </div>
+    {% endif %}
+{% if car_list %}
 <div class="table-responsive container-fluid table-container">
 <table class="table table-bordered custom-table table-hover">
         <tr>
@@ -90,7 +95,7 @@
 
     </table>
 </div>
-
+{% endif %}
    
 
 {% endblock %}
