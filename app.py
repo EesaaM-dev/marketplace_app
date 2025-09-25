@@ -284,27 +284,54 @@ def delete_car(car_id):
 
 @app.route('/cars')
 def show_cars():
+    filter_selected=False
     action_tab = False
     #using first() instead of one_or_none because first doesn't raise an exception when multiple rows exist
+
+    car_makes = db.session.query(CarListing.make).distinct()
     if flask_login.current_user.is_authenticated and CarListing.query.filter_by(user_id = flask_login.current_user.id).first() != None:
         action_tab = True
     q=request.args.get('search_query')
+    f=request.args.get('make_filter')
+    print(f)
+    if f:
+        filter_selected=True
+
+    if f and not q:
+        #apply filter
+        query_search = CarListing.query.filter((CarListing.make.like(f)))
+        cars_db = query_search
+        flash(f'Search Results with filter "{f}"', 'info' )
+        return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected)
+
     if q:
         print("SEARCHING FOR SOMETHING")
         #if search query is submitted 
         search = "%{}%".format(q)
-        query_search = CarListing.query.filter((CarListing.make.like(search)) | (CarListing.model.like(search) ))
+
+           
+        if f:
+            query_search = CarListing.query.filter((CarListing.make.like(f)) & (CarListing.model.like(search) ))
+        else:
+            query_search = CarListing.query.filter((CarListing.make.like(search)) | (CarListing.model.like(search) ))
+
         print(query_search.first())
         
         if query_search.first() != None:
-            flash(f'Search Results for "{q}"', 'info' )
+            if f:
+                flash(f'Search Results for "{q}" with filter "{f}"', 'info' )
+            else:
+                flash(f'Search Results for "{q}"', 'info' )
             cars_db = query_search
-            return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars")
+            return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected)
         else:
-            error =f'No Results found for "{q}"'
-            return render_template('cars.html', page_name = "cars", error = error)
+            if f:
+                error =f'No Results found for "{q}" with filter "{f}"'
+            else:
+                error =f'No Results found for "{q}"'
+            return render_template('cars.html', page_name = "cars", error = error, car_makes=car_makes)
     cars_db = CarListing.query.all()
-    return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars")
+    return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected)
 
 @app.route('/add', methods=['POST','GET'])
 def add_cars():
