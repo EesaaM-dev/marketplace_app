@@ -28,14 +28,20 @@
     color: #e0db51;
 }
 
+.id-row {
+    width: 100px;
+}
 
 
 
 .action-row{
-    width:330px;
+    width:220px;
     margin-right: 50px;
 }
 
+.custom-row{
+    width:200px;
+}
 
 .btn-group button,.btn-group button:hover  {
     margin-right: 5px;
@@ -57,6 +63,10 @@
             <th scope="col">Model</th>
             <th scope="col">Price</th>
             <th scope="col">Mileage</th>
+            <th scope="col">Transmission</th>
+            <th scope="col">Fuel</th>
+            <th scope="col">Body</th>
+            <th scope="col">Year</th>
 
             <!-- actions tab only shows if user is logged in  -->
             {% if current_user.is_authenticated and action_tab == True or current_user.is_admin %}
@@ -70,11 +80,15 @@
     {% for car in car_list %}
     <tr>
         <tbody>
-        <th scope="row">{{car.id}}</th>
-        <td>{{car.make}}</td>  
-        <td>{{car.model}}</td>  
-        <td>{{ "£{:,}".format(car.price)}}</td>  
-        <td>{{ "{:,}".format(car.mileage)}}</td> 
+        <th scope="row" class="id-row">{{car.id}}</th>
+        <td class="custom-row">{{car.make}}</td>  
+        <td class="custom-row">{{car.model}}</td>  
+        <td class="custom-row">{{ "£{:,}".format(car.price)}}</td>  
+        <td class="custom-row">{{ "{:,}".format(car.mileage)}}</td> 
+        <td class="custom-row">{{car.transmission.name}}</td> 
+        <td class="custom-row">{{car.fuel.name}}</td> 
+        <td class="custom-row">{{car.body.name}}</td>
+        <td class="custom-row">{{car.year}}</td> 
 
         <!-- only display the edit and delete options if the user is logged in and listing belongs to them  -->
         <!-- ensures that the table is drawn correctly (lines for each listing) -->

@@ -1,5 +1,6 @@
 import flask
 import os
+from enum import Enum
 from flask import Flask, flash, redirect, render_template, \
      request, url_for
 from markupsafe import escape   
@@ -21,18 +22,41 @@ db = SQLAlchemy(app)
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 
+class Transmission(Enum):
+    Manual = 1
+    Automatic = 2
 
+class BodyType(Enum):
+    Convertible = 1
+    Coupe = 2
+    Estate = 3
+    Hatchback = 4
+    MPV = 5
+    Saloon = 6
+    SUV = 7
+
+class FuelType(Enum):
+    Petrol = 1
+    Diesel = 2
+    Electric = 3
+    Hybrid = 4
 class CarListing(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     make = db.Column(db.String(30), nullable = False)
     model = db.Column(db.String(30), nullable = False)
     price = db.Column(db.Integer, nullable = False)
-    mileage = db.Column(db.Integer, nullable = False)
+    mileage = db.Column(db.Integer, nullable = False)    
+    transmission = db.Column(db.Enum(Transmission), nullable=False)
+    fuel = db.Column(db.Enum(FuelType), nullable=False)
+    body = db.Column(db.Enum(BodyType), nullable=False)
+    year = db.Column(db.Integer, nullable = False)  
+
+
     #foreign key to link user to listing
     user_id =  db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
-        return f"ID : {self.id} Make: {self.make} Model: {self.model} Price: {self.price}  Mileage: {self.mileage} user_id: {self.user_id}"
+        return f"ID : {self.id} Make: {self.make} Model: {self.model} Price: {self.price}  Mileage: {self.mileage} user_id: {self.user_id} transmission: {self.transmission}"
 
 class User(flask_login.UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -58,20 +82,35 @@ class User(flask_login.UserMixin, db.Model):
 
 
 #list of cars which creates each row of the table 
-cars = [{"Make" : "Mazda", "Model" : "Mazda2", "Price" : 2495, "Mileage": 87434},
-        {"Make" : "Honda", "Model" : "Jazz", "Price" : 3795, "Mileage": 99873},
-        {"Make" : "Toyota", "Model" : "Corolla", "Price" : 2200, "Mileage": 102224},
-        {"Make" : "Suzuki", "Model" : "Swift", "Price" : 2250, "Mileage": 113000}]
+cars = [{"Make" : "Mazda", "Model" : "Mazda2", "Price" : 2495, "Mileage": 87434, "Transmission" : Transmission.Manual, "Fuel" : FuelType.Petrol, "Body" : BodyType.Hatchback, "Year" : 2012 },
+        {"Make" : "Honda", "Model" : "Jazz", "Price" : 3795, "Mileage": 99873, "Transmission" : Transmission.Manual, "Fuel" : FuelType.Petrol, "Body" : BodyType.Hatchback, "Year" : 2014 },
+        {"Make" : "Toyota", "Model" : "Corolla", "Price" : 2200, "Mileage": 102224, "Transmission" : Transmission.Manual, "Fuel" : FuelType.Petrol, "Body" : BodyType.Hatchback, "Year" : 2005 },
+        {"Make" : "Suzuki", "Model" : "Swift", "Price" : 2250, "Mileage": 69298, "Transmission" : Transmission.Manual, "Fuel" : FuelType.Petrol, "Body" : BodyType.Hatchback, "Year" : 2006 },
+        {"Make" : "Toyota", "Model" : "Prius", "Price" : 5400, "Mileage": 74000, "Transmission" : Transmission.Automatic, "Fuel" : FuelType.Hybrid, "Body" : BodyType.Hatchback, "Year" : 2013 },
+        {"Make" : "Toyota", "Model" : "Yaris", "Price" : 3200, "Mileage": 83000, "Transmission" : Transmission.Manual, "Fuel" : FuelType.Petrol, "Body" : BodyType.Hatchback, "Year" : 2013 },
+        {"Make" : "Suzuki", "Model" : "Jimny", "Price" : 9890, "Mileage": 74000, "Transmission" : Transmission.Manual, "Fuel" : FuelType.Petrol, "Body" : BodyType.SUV, "Year" : 2012 },
+        {"Make" : "Mazda", "Model" : "MX-5", "Price" : 14799, "Mileage": 33449, "Transmission" : Transmission.Manual, "Fuel" : FuelType.Petrol, "Body" : BodyType.Convertible, "Year" : 2018 },
+        {"Make" : "Honda", "Model" : "Civic", "Price" : 3235, "Mileage": 79700, "Transmission" : Transmission.Manual, "Fuel" : FuelType.Petrol, "Body" : BodyType.Hatchback, "Year" : 2008 },
+        {"Make" : "Toyota", "Model" : "Verso", "Price" : 2000, "Mileage": 120000, "Transmission" : Transmission.Manual, "Fuel" : FuelType.Diesel, "Body" : BodyType.MPV, "Year" : 2012 },
+        {"Make" : "Tesla", "Model" : "Model 3", "Price" : 14995, "Mileage": 55000, "Transmission" : Transmission.Automatic, "Fuel" : FuelType.Electric, "Body" : BodyType.Saloon, "Year" : 2021 },
+        ]
 
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
 
-def valid_car(make, model, price, mileage):
+def valid_car(make, model, price, mileage, transmission, fuel, body, year):
     #method to check if a car entry is valid (input validation)
     error_msg=None
     is_valid = False
+    transmissions = [transmission.name for transmission in Transmission]
+    body_types = [body_type.name for body_type in BodyType]
+    fuel_types = [fuel_type.name for fuel_type in FuelType]
+    print(transmission)
+    print(fuel)
+    print(body)
+    print(year)
     
     try:
         #try converting price to int if it's a non-integer string it will fail
@@ -87,13 +126,32 @@ def valid_car(make, model, price, mileage):
         error_msg = "Mileage must be an integer value"
         #render add page with the error
         return error_msg, is_valid
+    
+    #try converting year to int will fail if its not an int
+    try:
+        #try converting year to int, if it's a non-integer string it fails
+        year = int(year)
+    except ValueError:
+        error_msg = "Year must be an integer value"
+        #render add page with the error
+        return error_msg, is_valid
+
+
+
     #checking that none of the values are 'None'
-    if not make or not model or not price or not mileage:
+    if not make or not model or not price or not mileage or not transmission or not fuel or not body or not year:
         error_msg = "You cannot submit a form with empty fields, please try again"
         return error_msg, is_valid
     elif make == "" or make.isspace() == True:
         error_msg="Make cannot be empty or contain whitespace"
         return error_msg, is_valid
+    #the dropdown options should prevent the need for this but just in case
+    elif fuel not in fuel_types:
+        error_msg="Declared fuel type is invalid"
+    elif body not in body_types:
+        error_msg="Declared body type is invalid"
+    elif transmission not in transmissions:
+        error_msg="Declared transmission is invalid"
     elif model == "" or model.isspace() == True:
         error_msg="Model cannot be empty"
         #checking that price is a positive integer
@@ -103,6 +161,10 @@ def valid_car(make, model, price, mileage):
         return error_msg, is_valid
     elif mileage <=0:
         error_msg = 'Mileage must be an integer value greater than 0'
+        print(error_msg)
+        return error_msg, is_valid
+    elif year <=0:
+        error_msg = 'Year must be an integer value greater than 0'
         print(error_msg)
         return error_msg, is_valid
     else:
@@ -117,7 +179,7 @@ def populate_db():
             print("Car database already has data")
         else:
             for car in cars:
-                car_entry = CarListing(make=car["Make"].capitalize(), model=car["Model"], price=car["Price"], mileage=car["Mileage"], user_id = 0)
+                car_entry = CarListing(make=car["Make"].capitalize(), model=car["Model"], price=car["Price"], mileage=car["Mileage"],transmission=car["Transmission"], fuel=car["Fuel"], body=car["Body"], year=car["Year"], user_id = 0)
                 with app.app_context():
                     
                     db.session.add(car_entry)
@@ -219,6 +281,8 @@ def health():
 @app.route('/cars/edit/<int:car_id>', methods=['POST','GET'])
 @flask_login.login_required
 def edit_car(car_id):
+    fuel_options = [f.name for f in FuelType]
+    body_options = [b.name for b in BodyType]
     #method to allow editing a car entry
     old_car_entry = CarListing.query.get(car_id)
     #check if current user owns the listing or if they're an admin and then allow editing
@@ -229,29 +293,38 @@ def edit_car(car_id):
             new_model = request.form.get("Model").strip()
             new_price = request.form.get("Price")
             new_mileage = request.form.get("Mileage")
+            new_transmission = request.form.get("transmission")
+            print(new_transmission)
+            new_body = request.form.get("body")
+            new_fuel = request.form.get("fuel")
+            new_year = request.form.get("Year")
+            print(new_body)
             print(new_make, new_model, new_price, new_mileage)
-            error_msg, is_valid = valid_car(new_make, new_model, new_price, new_mileage)
+            error_msg, is_valid = valid_car(new_make, new_model, new_price, new_mileage, new_transmission, new_fuel, new_body, new_year)
             if is_valid:
                 #if the car passes validation update the listing
                 old_car_entry.make = new_make.capitalize()
                 old_car_entry.model = new_model
                 old_car_entry.price = new_price
                 old_car_entry.mileage = new_mileage
+                old_car_entry.transmission = new_transmission
+                old_car_entry.fuel = new_fuel
+                old_car_entry.body = new_body
+                old_car_entry.year = new_year
+
+
                 db.session.commit()
                 flash(f'Vehicle with ID: {car_id} was successfully edited', 'success') #flashing a message for when the user is redirected
                 return redirect(url_for("show_cars"))
             else:
                 #if not valid return the page with the error message
-                return render_template('edit.html', error=error_msg, id=car_id, car=old_car_entry)
+                return render_template('edit.html', error=error_msg, id=car_id, car=old_car_entry, fuel_options = fuel_options, body_options = body_options)
     else:
         flash('UNAUTHORISED YOU CANNOT EDIT THIS LISTING', 'danger')
         return redirect(url_for('show_cars'))
-
-   
-   
-
         #rendered on the GET request
-    return render_template('edit.html', id = car_id, car=old_car_entry, page_name = "cars")
+    print(fuel_options)
+    return render_template('edit.html', id = car_id, car=old_car_entry, page_name = "cars", fuel_options = fuel_options, body_options = body_options)
 #route for deleting cars using variable route
 @app.route('/cars/delete/<int:car_id>', methods=['POST','GET'])
 @flask_login.login_required
@@ -292,49 +365,63 @@ def show_cars():
     if flask_login.current_user.is_authenticated and CarListing.query.filter_by(user_id = flask_login.current_user.id).first() != None:
         action_tab = True
     q=request.args.get('search_query')
-    f=request.args.get('make_filter')
-    print(f)
-    if f:
-        filter_selected=True
+    make_filter=request.args.get('make_filter')
+    print(make_filter)
+    if q == None or make_filter == None:
+        #display all listings if no filters or search query fetched
+        cars_db = CarListing.query.all()
+        return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected)
+    else:
+        filters = {"Make": None, "Model": None }
+        if make_filter:
+                    filters["Make"]=make_filter
+                    query_search = CarListing.query.filter((CarListing.make.like(make_filter)))
+                    #need to send data to the frontend (for the dependent dropdown)
+                    print(query_search)        
+        if q:
+                print("SEARCHING FOR SOMETHING")
+                #if search query is submitted 
+                search = "%{}%".format(q)
 
-    if f and not q:
-        #apply filter
-        query_search = CarListing.query.filter((CarListing.make.like(f)))
+                if make_filter:
+                    query_search = CarListing.query.filter((CarListing.make.like(make_filter)) & (CarListing.model.like(search) ))
+                else:
+                    query_search = CarListing.query.filter((CarListing.make.like(search)) | (CarListing.model.like(search) ))
+                print(query_search.first())
+                if query_search.first() != None:
+                    print(filters)
+                    if make_filter:
+                        print("DEBUG 1")
+                        filter_str ={}
+                        for k,v in filters.items():
+                            if v !=None:
+                                filter_str.update({k: v})
+                            else:
+                                continue
+                        for k,v in filter_str.items():
+                            filter_output = [k + " = " + v]
+                        flash(f'Search Results for "{q}" with filters: {','.join(filter_output)}', 'info' )
+                    else:
+                        print("DEBUG 2")
+                        flash(f'Search Results for "{q}"', 'info' )
+                    cars_db = query_search
+                    return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected)
+                else:
+                    if make_filter:
+                        error =f'No Results found for "{q}" with filter "{make_filter}"'
+                    else:
+                        error =f'No Results found for "{q}"'
+                    return render_template('cars.html', page_name = "cars", error = error, car_makes=car_makes)
+        
         cars_db = query_search
-        flash(f'Search Results with filter "{f}"', 'info' )
         return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected)
 
-    if q:
-        print("SEARCHING FOR SOMETHING")
-        #if search query is submitted 
-        search = "%{}%".format(q)
-
-           
-        if f:
-            query_search = CarListing.query.filter((CarListing.make.like(f)) & (CarListing.model.like(search) ))
-        else:
-            query_search = CarListing.query.filter((CarListing.make.like(search)) | (CarListing.model.like(search) ))
-
-        print(query_search.first())
-        
-        if query_search.first() != None:
-            if f:
-                flash(f'Search Results for "{q}" with filter "{f}"', 'info' )
-            else:
-                flash(f'Search Results for "{q}"', 'info' )
-            cars_db = query_search
-            return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected)
-        else:
-            if f:
-                error =f'No Results found for "{q}" with filter "{f}"'
-            else:
-                error =f'No Results found for "{q}"'
-            return render_template('cars.html', page_name = "cars", error = error, car_makes=car_makes)
-    cars_db = CarListing.query.all()
-    return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected)
-
+    
+    
 @app.route('/add', methods=['POST','GET'])
 def add_cars():
+    fuel_options = [f.name for f in FuelType]
+    body_options = [b.name for b in BodyType]
     if flask_login.current_user.is_authenticated:
         if request.method == "POST":
             #if user has submitted a form extract data from it
@@ -344,22 +431,26 @@ def add_cars():
             model = request.form.get("Model").strip()
             price = request.form.get("Price").strip()
             mileage = request.form.get("Mileage").strip()
-
-            error_msg, is_valid = valid_car(make, model, price, mileage)
+            transmission = request.form.get("transmission")
+            fuel = request.form.get("fuel")
+            body = request.form.get("body") 
+            year = request.form.get("Year").strip()
+            error_msg, is_valid = valid_car(make, model, price, mileage, transmission, fuel, body, year)
             if is_valid:
                 #if car is valid it can be added to the database
-                car_db_entry = CarListing(make=make.capitalize(), model=model, price=price, mileage=mileage, user_id = owner)
+                car_db_entry = CarListing(make=make.capitalize(), model=model, price=price, mileage=mileage, transmission=transmission, fuel=fuel, body=body, year=year, user_id = owner)
                 with app.app_context():
                         db.session.add(car_db_entry)
                         db.session.commit()
                 flash('Vehicle successfully added', 'success') #flashing a message for when the user is redirected
                 return redirect(url_for("show_cars"))
             else:
-                return render_template('add.html', error=error_msg)
+                return render_template('add.html', error=error_msg, fuel_options= fuel_options, body_options = body_options)
     else:
         flash('You must login or sign up to sell cars', 'danger')
         return redirect(url_for("login"))
-    return render_template('add.html', page_name = "add") #when user clicks on the route ('GET') render the add page
+    #when user clicks on the route ('GET') render the add page
+    return render_template('add.html', page_name = "add", fuel_options= fuel_options, body_options = body_options)
 
 
 

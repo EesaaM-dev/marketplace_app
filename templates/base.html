@@ -103,6 +103,7 @@
                   {{i.make}}
                 </label>
               </div>
+              
               {% endfor %}
               <button onclick="resetFilters()">Reset</button>
             </div>
@@ -187,6 +188,7 @@
           console.log(event.target.id);
           localStorage.clear();
           localStorage.setItem(event.target.id, true);
+          
         });
       };
       // this checks localstorage and ensures filter stays selected

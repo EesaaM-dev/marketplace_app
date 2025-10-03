@@ -33,6 +33,44 @@
         <input type="text" class="form-control" name=Price id="Price"></br>
         <label for="Mileage">Vehicle Mileage:</label><br>
         <input type="text" class="form-control" name="Mileage" id="Mileage"></br>
+
+        <label for="Transmission-select">Vehicle Transmission:</label><br>
+        <!-- dropdown selection for transmission -->
+        <select class="form-control" name="transmission" id="Transmission-select">
+          <option value="" selected >Select Vehicle Transmission:</option>
+          <option value="Automatic">Automatic</option> 
+          <option value="Manual">Manual</option>
+        </select> <br>
+
+        <label for="Fuel-select">Vehicle Fuel:</label><br>
+        <!-- dropdown selection for Fuel type -->
+        <select class="form-control" name="fuel" id="Fuel-select">
+          <option value="" selected>Select Vehicle Fuel:</option>
+          {% for i in fuel_options %}
+          <option value={{i}}>{{i}}</option> 
+        {% endfor %}
+        </select> <br>
+
+        <label for="Body-select">Select Vehicle Body:</label><br>
+        <!-- dropdown selection for body type -->
+        <select class="form-control" name="body" id="Body-select">
+          <option value="" selected>Select Vehicle Body</option>
+          {% for i in body_options %}
+          <option value={{i}}>{{i}}</option> 
+        {% endfor %}
+        </select> <br>
+    
+    
+        <label for="Year">Vehicle Year:</label><br>
+        <input type="text" class="form-control" name="Year" id="Year"></br>
+
+
+
+
+
+
+
+
         <div class="button-row" role="group">
         <button type="submit" class="btn btn-listing">
           Submit
