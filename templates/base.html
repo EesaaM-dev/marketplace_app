@@ -53,6 +53,10 @@
       border-color: #e0db51;
       color: rgb(79, 79, 79);
     }
+
+    .radio_options {
+      accent-color:#e0db51;
+    }
   </style>
 </head>
 
@@ -95,9 +99,10 @@
             </button>
             <div class="dropdown-menu" id="dropdown">
               <h6 style="text-align: center;">Makes:</h6>
+              <div id="MAKES">
               {% for i in car_makes %}
               <div class="form-check" style="margin-left: auto; margin-right: auto;">
-                <input class="form-check-input" type="radio" name="make_filter" id="make_filter{{i.make}}"
+                <input class="form-check-input radio_options" type="radio" name="make_filter" id="make_filter{{i.make}}"
                   value="{{i.make}}">
                 <label class="form-check-label" for="make_filter{{i.make}}">
                   {{i.make}}
@@ -105,19 +110,61 @@
               </div>
               
               {% endfor %}
-              <button onclick="resetFilters()">Reset</button>
+              </div>
+              <div ID="FUEL">
+              <h6 style="text-align: center;">Fuel:</h6>
+              {% for i in fuel_options %}
+              <div class="form-check" style="margin-left: auto; margin-right: auto;">
+                <input class="form-check-input radio_options" type="radio" name="fuel_filter" id={{i}}
+                  value={{i}}>
+                <label class="form-check-label" for="{{i}}">
+                  {{i}}
+                </label>
+              </div>
+              {% endfor %}
+              </div>
+
+              <div id="BODY">
+              <h6 style="text-align: center;">Body:</h6>
+              {% for i in body_options %}
+              <div class="form-check" style="margin-left: auto; margin-right: auto;">
+                <input class="form-check-input radio_options" type="radio" name="body_filter" id={{i}}
+                  value={{i}}>
+                <label class="form-check-label" for="{{i}}">
+                  {{i}}
+                </label>
+              </div>
+              {% endfor %}
+              </div>
+
+              <div id="transmission">
+              <h6 style="text-align: center;">Transmission:</h6>
+              <div class="form-check" style="margin-left: auto; margin-right: auto;">
+                <input class="form-check-input radio_options" type="radio" name="transmission_filter" id=transmission_auto value="Automatic">
+                <label class="form-check-label" for="transmission_auto">
+                  Automatic
+                </label>
+              </div>
+              
+              <div class="form-check" style="margin-left: auto; margin-right: auto;">
+                <input class="form-check-input radio_options" type="radio" name="transmission_filter" id=transmission_manual value="Manual">
+                <label class="form-check-label" for="transmission_auto">
+                  Manual
+                </label>
+              </div>
+              </div>
+
+
+
+              
+              <button type="button" onclick="resetFilters()">Reset</button>
             </div>
-
-            
-
-            
-            
 
           </div>
           {% endif %}
           <input type="search" class="form-control mr-sm-2 py-1" placeholder="Search" aria-label="Search"
               name="search_query" id="search_query">
-            <button type="submit" class="btn btn-outline-search mr-sm-2 py-1" id="submit">Enter</button>
+            <button onclick="Store_filters()" type="submit" class="btn btn-outline-search mr-sm-2 py-1" id="submit">Enter</button>
           
         </form>
 
@@ -162,8 +209,7 @@
     // check if the current page is 'cars' page
     if (window.location.pathname == "/cars") {
       
-
-
+      
       // add an event listener to the dropdown to prevent it closing when clicking inside of the dropdown
       document.getElementById("dropdown").addEventListener('click', function (event) {
         event.stopPropagation();
@@ -174,6 +220,7 @@
         if (event.key === "Enter") {
           event.preventDefault();
           document.getElementById("submit").click();
+          
         }
       })
 
@@ -181,39 +228,53 @@
 
 
       // setting an eventlistener to each radio button so when filter selected I can keep track of it
-      var options = document.getElementsByName("make_filter");
-      for (var i = 0; i < options.length; i++) {
-        document.getElementById(options[i].id).addEventListener('change', function () {
-          // when a filter is selected clear then set localstorage with the id of target from the event
-          console.log(event.target.id);
-          localStorage.clear();
-          localStorage.setItem(event.target.id, true);
-          
-        });
-      };
-      // this checks localstorage and ensures filter stays selected
-      for (i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        const value = localStorage.getItem(key);
-        console.log(key);
-        console.log(value);
-        document.getElementById(key).checked = true;
+    
+
+    function save_filter(selected) {
+      var filter_options = document.getElementsByName(selected)
+      for (var i=0; i<filter_options.length;i++){
+        if (filter_options[i].checked){
+
+          localStorage.setItem(selected, filter_options[i].value);
+        }
       }
-      function resetFilters() {
-        //iterate through local storage and unselect the filter
-        for (i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          const value = localStorage.getItem(key);
-          console.log(key);
-          console.log(value);
-          document.getElementById(key).checked = false;
-        };
-        //clear local storage so that filter isnt reselected
-        localStorage.clear();
-        console.log("NO FILTERS CHOSEN");
+    }
+
+    function restore_filter(selected) {
+      var filter_options = document.getElementsByName(selected)
+      for (i = 0; i < filter_options.length; i++) {
+        if (filter_options[i].value === localStorage.getItem(selected) ) {
+          filter_options[i].checked = true;
+        }
+        
+
+      }
+    }
+
+    function Store_filters() {
+      localStorage.clear()
+      save_filter("make_filter")
+      save_filter("fuel_filter")
+      save_filter("transmission_filter")
+      save_filter("body_filter")
+    };
+
+    function resetFilters() {
+      localStorage.clear();
+      window.location.href = "/cars";
       };
 
 
+
+
+      restore_filter("make_filter")
+      restore_filter("fuel_filter")
+      restore_filter("transmission_filter")
+      restore_filter("body_filter")
+      
+    
+
+    
     };
   </script>
   {% block content %}

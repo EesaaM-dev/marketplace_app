@@ -359,65 +359,84 @@ def delete_car(car_id):
 def show_cars():
     filter_selected=False
     action_tab = False
+    query_search = CarListing.query.filter_by()
     #using first() instead of one_or_none because first doesn't raise an exception when multiple rows exist
 
     car_makes = db.session.query(CarListing.make).distinct()
+    fuel_options = [f.name for f in FuelType]
+    body_options = [b.name for b in BodyType]
+
     if flask_login.current_user.is_authenticated and CarListing.query.filter_by(user_id = flask_login.current_user.id).first() != None:
         action_tab = True
     q=request.args.get('search_query')
     make_filter=request.args.get('make_filter')
-    print(make_filter)
-    if q == None or make_filter == None:
+    body_filter = request.args.get('body_filter')
+    fuel_filter= request.args.get('fuel_filter')
+    transmission_filter = request.args.get('transmission_filter')
+    if q == None and make_filter == None:
         #display all listings if no filters or search query fetched
         cars_db = CarListing.query.all()
-        return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected)
+        return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected, fuel_options = fuel_options, body_options = body_options)
     else:
-        filters = {"Make": None, "Model": None }
+        filters = {"Make": None, "Model": None, "Fuel" : None, "Body" : None, "Transmission" : None}
+        print(make_filter)
+        print(body_filter)
+        print(fuel_filter)
+        flash_str = ''
         if make_filter:
                     filters["Make"]=make_filter
-                    query_search = CarListing.query.filter((CarListing.make.like(make_filter)))
+                    flash_str += f'Make="{make_filter}", '
+                    query_search = query_search.filter_by(make = make_filter)
                     #need to send data to the frontend (for the dependent dropdown)
-                    print(query_search)        
+                    
+        if fuel_filter:                    
+                    filters["Fuel"]=fuel_filter
+                    flash_str += f'Fuel="{fuel_filter}", '
+                    query_search = query_search.filter_by(fuel = fuel_filter)
+        if body_filter:                    
+                    filters["Body"]=body_filter
+                    flash_str += f'Body="{body_filter}", '
+                    query_search = query_search.filter_by(body = body_filter)
+        if transmission_filter:                    
+                    filters["Transmission"]=transmission_filter
+                    flash_str += f'Transmission="{transmission_filter}", '
+                    query_search = query_search.filter_by(transmission = transmission_filter)
         if q:
                 print("SEARCHING FOR SOMETHING")
                 #if search query is submitted 
                 search = "%{}%".format(q)
-
-                if make_filter:
-                    query_search = CarListing.query.filter((CarListing.make.like(make_filter)) & (CarListing.model.like(search) ))
-                else:
-                    query_search = CarListing.query.filter((CarListing.make.like(search)) | (CarListing.model.like(search) ))
+                query_search = query_search.filter((CarListing.make.like(search)) | (CarListing.model.like(search) ))
                 print(query_search.first())
                 if query_search.first() != None:
-                    print(filters)
-                    if make_filter:
-                        print("DEBUG 1")
-                        filter_str ={}
-                        for k,v in filters.items():
-                            if v !=None:
-                                filter_str.update({k: v})
-                            else:
-                                continue
-                        for k,v in filter_str.items():
-                            filter_output = [k + " = " + v]
-                        flash(f'Search Results for "{q}" with filters: {','.join(filter_output)}', 'info' )
-                    else:
-                        print("DEBUG 2")
-                        flash(f'Search Results for "{q}"', 'info' )
+                    if flash_str:
+                        flash(f'Search Results for "{q}" {flash_str}', 'info' )
+                    flash(f'Search Results for "{q}"', 'info' )
                     cars_db = query_search
-                    return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected)
+                    return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected, fuel_options = fuel_options, body_options = body_options)
                 else:
                     if make_filter:
-                        error =f'No Results found for "{q}" with filter "{make_filter}"'
+                        error =f'No Results found for "{q}" with filter "{filters}"'
                     else:
                         error =f'No Results found for "{q}"'
-                    return render_template('cars.html', page_name = "cars", error = error, car_makes=car_makes)
+                    return render_template('cars.html', page_name = "cars", error = error, car_makes=car_makes, fuel_options = fuel_options, body_options = body_options)
+        if query_search.first():
+            print("AT LEAST ONE RESULT EXISTS")
+            print(query_search)            
+            if flash_str:
+                flash(flash_str, 'info')
+                cars_db = query_search
+                return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected, fuel_options = fuel_options, body_options = body_options)
+            
+        else:
+            print("NO RESULTS EXIST FOR THE GIVEN FILTERS ")
+            error =f'No Results found for: {flash_str}'
+            return render_template('cars.html', page_name = "cars", error = error, car_makes=car_makes, fuel_options = fuel_options, body_options = body_options)
         
+        if flash_str ==True:
+            flash(flash_str, 'info')
         cars_db = query_search
-        return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected)
+        return render_template('cars.html', car_list = cars_db, action_tab = action_tab, page_name = "cars", car_makes=car_makes, filter_selected=filter_selected, fuel_options = fuel_options, body_options = body_options)
 
-    
-    
 @app.route('/add', methods=['POST','GET'])
 def add_cars():
     fuel_options = [f.name for f in FuelType]
@@ -479,8 +498,8 @@ if __name__ ==("__main__"):
     print("app running now ")
     app.run(debug=True)    
 
-# with app.test_request_context():
-#     print(url_for('index'))
+with app.test_request_context():
+    print(url_for('cars'))
 #     print(url_for('login'))
 #     print(url_for('login', next='/'))
 #     print(url_for('show_user_profile', username = 'John Doe'))
